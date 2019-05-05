@@ -25,83 +25,73 @@ import org.apache.commons.lang3.StringUtils;
 public class Main {
 
 	public static void main(String[] args) {
-
-		// TODO full path vs relative path: abc/xxx, ./xxx, xxx
 		// TODO problem when there is 2 apks with the same name
+		// TODO full path / relative path parsing might be error prone for different platforms
 
-		if (args.length == 0 || args.length > 1) {
-			System.out.println("Only one argument is expected. Found: " + args.length);
-//			test();
-			return;
-		}
-		System.out.println("input: '" + args[0] + "'");
+		System.out.println("user input: '" + args[0] + "'");
 
-		String targetFolderPath = null;
-
-		if (args[0].startsWith("/") || args[0].startsWith("C:\\")) {
-			targetFolderPath = args[0];
-		}
-		else {
-			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath();
-			String firstPath = StringUtils.removeEnd(path.toString(), ".");
-			System.out.println(StringUtils.removeEnd(path.toString(), "."));
-//			System.out.println(path.resolve(args[0]));
-			String secondPath = StringUtils.remove(args[0], "./");
-//			System.out.println(path.resolve(StringUtils.remove(args[0], "./")));
-			targetFolderPath = firstPath + secondPath;
-		}
-		System.out.println("parsed folder path: " + targetFolderPath + "\n");
-
-		File targetFolder = new File(targetFolderPath);
-		if (!targetFolder.isDirectory()) {
-			System.out.println("File does not exist or is not a directory!");
-			return;
-		}
+		File targetFolder = getTargetFolder(args);
 
 		List<File> targetFolderItems = Arrays.asList(targetFolder.listFiles());
 		List<File> apkFileList = new ArrayList<>();
+		List<Integer> exitCodeList = new ArrayList<>();
+
 		targetFolderItems.forEach(item -> {
 			if (item.isFile() && item.getName().endsWith(".apk")) {
 				apkFileList.add(item);
 			}
-//			System.out.println(item.getName());
 		});
 
 		ProcessBuilder processBuilder = new ProcessBuilder();
-		// sets the working directory for the processBuilder
-		processBuilder.directory(targetFolder);
+		processBuilder.directory(targetFolder); // sets the working directory for the processBuilder
 
-		List<Integer> exitCodeList = new ArrayList<>();
-		System.out.println(apkFileList.size() + " apk files found.");
 		apkFileList.forEach(apkFile -> {
-
-			System.out.println(apkFile.getName() + "--- apktool d " + apkFile.getPath());
+			// TODO refactor so it also works with macOs
 			processBuilder.command("cmd.exe", "/c", "apktool d " + apkFile.getPath());
-			exitCodeList.add(startProcess(processBuilder));
+			int exitCode = startProcess(processBuilder);
+			exitCodeList.add(exitCode);
 		});
 
 		int successCount = Collections.frequency(exitCodeList, 0);
 		int failCount = Collections.frequency(exitCodeList, 1);
 		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}",
 				apkFileList.size(), successCount, failCount));
-//		System.out
-//				.println(MessageFormat.format("Successfully decoded {0} apk(s) out of {1}", successCount, apkFileList.size()));
-
-		// TODO change this command so it works with macOs and with a full path to the apk folder as argument
-//		processBuilder.command("cmd.exe", "/c", "dir");
-		// sets the working directory for the process
-//		processBuilder.directory(targetFolder);
-//		startProcess(processBuilder);
 
 	}
 
-	// return code, "successfully compiles 20 out of 20 ..."
+	private static File getTargetFolder(String[] args) {
+		String targetFolderPath = null;
+
+		if (args.length != 1) {
+			System.out.println("Expecting only one argument");
+			System.exit(0);
+		}
+		if (args[0].startsWith("/") || args[0].startsWith("C:\\")) {
+			targetFolderPath = args[0];
+		}
+		else {
+			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath();
+			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
+			System.out.println(currentDirectoryPath);
+			String userInput = StringUtils.remove(args[0], "./");
+			targetFolderPath = currentDirectoryPath + userInput;
+		}
+
+		System.out.println("parsed folder path: " + targetFolderPath + "\n");
+
+		File targetFolder = new File(targetFolderPath);
+		if (!targetFolder.isDirectory()) {
+			System.out.println("File does not exist or is not a directory!");
+			System.exit(0);
+		}
+		return targetFolder;
+	}
+
 	private static int startProcess(ProcessBuilder processBuilder) {
 		System.out.println("Starting process...");
 		int exitCode = 1;
 		try {
-			// allows the error message generated from the process to be sent to input stream
-			processBuilder.redirectErrorStream(true);
+			processBuilder.redirectErrorStream(true); // allows the error message generated from the process to be sent to input stream
 			Process process = processBuilder.start();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line;
@@ -110,8 +100,7 @@ public class Main {
 				System.out.println(line);
 			}
 
-			// returns 0 on success, 1 on failure
-			exitCode = process.waitFor();
+			exitCode = process.waitFor(); // returns 0 on success, 1 on failure
 			System.out.println("\nExited with error code : " + exitCode);
 
 		} catch (IOException e) {
