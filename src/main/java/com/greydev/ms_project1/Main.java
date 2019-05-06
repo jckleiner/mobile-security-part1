@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Main {
 
+	private static final String PREFIX_GENERATED = "generated_";
+
 	public static void main(String[] args) {
 		// TODO problem when there is 2 apks with the same name
 		// TODO full path / relative path parsing might be error prone for different platforms
@@ -47,7 +49,10 @@ public class Main {
 
 		apkFileList.forEach(apkFile -> {
 			// TODO refactor so it also works with macOs
-			processBuilder.command("cmd.exe", "/c", "apktool d " + apkFile.getPath());
+			String apkPath = apkFile.getPath();
+			String generatedApkFolderName = PREFIX_GENERATED + StringUtils.removeEnd(apkFile.getName(), ".apk");
+			String commandToExecute = MessageFormat.format("apktool d {0} -o {1}", apkPath, generatedApkFolderName);
+			processBuilder.command("cmd.exe", "/c", commandToExecute);
 			int exitCode = startProcess(processBuilder);
 			exitCodeList.add(exitCode);
 		});
@@ -70,7 +75,7 @@ public class Main {
 			targetFolderPath = args[0];
 		}
 		else {
-			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath();
+			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
 			System.out.println(currentDirectoryPath);
 			String userInput = StringUtils.remove(args[0], "./");
@@ -81,7 +86,7 @@ public class Main {
 
 		File targetFolder = new File(targetFolderPath);
 		if (!targetFolder.isDirectory()) {
-			System.out.println("File does not exist or is not a directory!");
+			System.out.println("Directory does not exist or is not a directory!");
 			System.exit(0);
 		}
 		return targetFolder;
