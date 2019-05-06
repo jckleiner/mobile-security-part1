@@ -10,9 +10,18 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
 
 /*
  * To copy any apk from the emulator to your current directory do the following in your terminal:
@@ -26,7 +35,7 @@ public class Main {
 
 	private static final String PREFIX_GENERATED = "generated_";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws DocumentException {
 		// TODO problem when there is 2 apks with the same name
 		// TODO full path / relative path parsing might be error prone for different platforms
 
@@ -62,6 +71,98 @@ public class Main {
 		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}",
 				apkFileList.size(), successCount, failCount));
 
+		File manifestFile = new File("C:\\Users\\Can\\Desktop\\develop\\MobileSecurity\\instagram\\AndroidManifest.xml");
+		parse(manifestFile);
+	}
+
+	public static void parse(File manifestFile) throws DocumentException {
+
+		if (!manifestFile.isFile()) {
+			System.out.println("Manifest file is not found.");
+			return;
+		}
+
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(manifestFile); // a URL object can also be passed as an argument
+
+		Element root = document.getRootElement(); // <manifest> element
+
+		// <manifest> can contain:
+		// <compatible-screens>
+		// <instrumentation>
+		// <permission>
+		// <permission-group>
+		// <permission-tree>
+		// <supports-gl-texture>
+		// <supports-screens>
+		// <uses-configuration>
+		// <uses-feature>
+		// <uses-permission>
+		// <uses-permission-sdk-23>
+		// <uses-sdk>
+		// <application>
+
+		// <application> can contain:
+		// <activity>
+		// <activity-alias>
+		// <meta-data>
+		// <service>
+		// <receiver>
+		// <provider>
+		// <uses-library>
+
+		// <activity> can contain:
+		// <intent-filter>
+		// <meta-data>
+		// <layout>
+
+		Set<String> elementSet = new HashSet<>();
+		// iterate through child elements of root
+		for (Iterator<Element> it = root.elementIterator(); it.hasNext();) {
+			Element element = it.next();
+//			elementSet.add(element.getName());
+//			System.out.println(element.getName());
+		}
+
+		// get all activities
+		List<Node> activityList = document.selectNodes("//manifest/application/activity");
+		activityList.forEach(node -> {
+			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+		});
+
+		// get all services
+		List<Node> serviceList = document.selectNodes("//manifest/application/service");
+		serviceList.forEach(node -> {
+			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+		});
+
+		// get all brodcast receivers
+		List<Node> receiverList = document.selectNodes("//manifest/application/receiver");
+		receiverList.forEach(node -> {
+			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+		});
+
+		// get all providers
+		List<Node> providerList = document.selectNodes("//manifest/application/provider");
+		providerList.forEach(node -> {
+			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+		});
+
+		// iterate through child elements of root with element name "foo"
+		// NPE
+		for (Iterator<Element> it = root.element("application").elementIterator(); it.hasNext();) {
+			Element element = it.next();
+			elementSet.add(element.getName());
+		}
+
+		// element.valueOf("@android:name");
+
+		// iterate through attributes of root
+		for (Iterator<Attribute> it = root.attributeIterator(); it.hasNext();) {
+			Attribute attribute = it.next();
+			// do something
+		}
+//		elementSet.forEach(e -> System.out.println(e));
 	}
 
 	private static File getTargetFolder(String[] args) {
