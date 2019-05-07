@@ -23,6 +23,12 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
+import com.greydev.ms_project1.model.Activity;
+import com.greydev.ms_project1.model.Apk;
+import com.greydev.ms_project1.model.BroadcastReceiver;
+import com.greydev.ms_project1.model.ContentProvider;
+import com.greydev.ms_project1.model.Service;
+
 /*
  * To copy any apk from the emulator to your current directory do the following in your terminal:
  * 		'adb shell pm list packages', copy the package name you want to pull 'com.instagram.android'
@@ -44,48 +50,89 @@ public class Main {
 		File targetFolder = getTargetFolder(args);
 
 		List<File> targetFolderItems = Arrays.asList(targetFolder.listFiles());
-		List<File> apkFileList = new ArrayList<>();
-		List<Integer> exitCodeList = new ArrayList<>();
+		List<File> apkFiles = new ArrayList<>();
+		List<String> generatedFolderPaths = new ArrayList<>();
+		List<Integer> exitCodes = new ArrayList<>();
 
 		targetFolderItems.forEach(item -> {
 			if (item.isFile() && item.getName().endsWith(".apk")) {
-				apkFileList.add(item);
+				apkFiles.add(item);
 			}
 		});
 
 		ProcessBuilder processBuilder = new ProcessBuilder();
 		processBuilder.directory(targetFolder); // sets the working directory for the processBuilder
 
-		apkFileList.forEach(apkFile -> {
+		apkFiles.forEach(apkFile -> {
 			// TODO refactor so it also works with macOs
 			String apkPath = apkFile.getPath();
 			String generatedApkFolderName = PREFIX_GENERATED + StringUtils.removeEnd(apkFile.getName(), ".apk");
 			String commandToExecute = MessageFormat.format("apktool d {0} -o {1}", apkPath, generatedApkFolderName);
 			processBuilder.command("cmd.exe", "/c", commandToExecute);
 			int exitCode = startProcess(processBuilder);
-			exitCodeList.add(exitCode);
+
+			if (exitCode == 0) {
+				generatedFolderPaths.add(targetFolder + "\\" + generatedApkFolderName);
+			}
+			exitCodes.add(exitCode);
 		});
 
-		int successCount = Collections.frequency(exitCodeList, 0);
-		int failCount = Collections.frequency(exitCodeList, 1);
+		int successCount = Collections.frequency(exitCodes, 0);
+		int failCount = Collections.frequency(exitCodes, 1);
 		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}",
-				apkFileList.size(), successCount, failCount));
+				apkFiles.size(), successCount, failCount));
 
-		File manifestFile = new File("C:\\Users\\Can\\Desktop\\develop\\MobileSecurity\\instagram\\AndroidManifest.xml");
-		parse(manifestFile);
+		generatedFolderPaths.forEach(folderName -> {
+			String smaliFolderPath = targetFolder + "\\" + folderName;
+			System.out.println(smaliFolderPath);
+		});
+
+		populateApkList(generatedFolderPaths);
+
 	}
 
-	public static void parse(File manifestFile) throws DocumentException {
+	public static List<Apk> populateApkList(List<String> generatedFolderPaths) {
+		System.out.println("generated file count: " + generatedFolderPaths.size());
+		List<Apk> apkList = new ArrayList<>();
+		generatedFolderPaths.forEach(folderPath -> {
+			Apk apk = parse(folderPath);
+			if (apk != null) {
+				apkList.add(apk);
+			}
+		});
+		return apkList;
+	}
+
+	// TODO rename
+	public static Apk parse(String folderPath) {
+
+		File manifestFile = new File(folderPath + "\\AndroidManifest.xml");
 
 		if (!manifestFile.isFile()) {
 			System.out.println("Manifest file is not found.");
-			return;
+			return null;
 		}
 
+		Apk apk = new Apk();
+		apk.setSmaliFolderPath(folderPath);
+		apk.setDecodedManifestFilePath(manifestFile.getAbsolutePath());
+
 		SAXReader reader = new SAXReader();
-		Document document = reader.read(manifestFile); // a URL object can also be passed as an argument
+		Document document = null;
+		try {
+			document = reader.read(manifestFile); // a URL object can also be passed as an argument
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
 
 		Element root = document.getRootElement(); // <manifest> element
+		String packageName = root.valueOf("@package");
+		String appName = StringUtils.substringAfterLast(packageName, ".");
+		apk.setPackageName(packageName);
+		apk.setAppName(appName);
+
+		System.out.println("package: " + packageName);
+		System.out.println("appName: " + appName);
 
 		// <manifest> can contain:
 		// <compatible-screens>
@@ -116,6 +163,11 @@ public class Main {
 		// <meta-data>
 		// <layout>
 
+		// <intent-filter> can contain:
+		// <action>
+		// <category>
+		// <data>
+
 		Set<String> elementSet = new HashSet<>();
 		// iterate through child elements of root
 		for (Iterator<Element> it = root.elementIterator(); it.hasNext();) {
@@ -124,28 +176,44 @@ public class Main {
 //			System.out.println(element.getName());
 		}
 
+		List<Activity> activities = new ArrayList<>();
+		List<BroadcastReceiver> brodcastReceivers = new ArrayList<>();
+		List<ContentProvider> contentProviders = new ArrayList<>();
+		List<Service> services = new ArrayList<>();
+
 		// get all activities
 		List<Node> activityList = document.selectNodes("//manifest/application/activity");
 		activityList.forEach(node -> {
-			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+			String fullClassName = node.valueOf("@android:name");
+			String className = StringUtils.substringAfterLast(fullClassName, ".");
+
+			// find smaliClassPath
+			// find intentFilterActions
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
+			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr " + className);
+
+			Activity act = new Activity();
+
 		});
 
 		// get all services
 		List<Node> serviceList = document.selectNodes("//manifest/application/service");
 		serviceList.forEach(node -> {
-			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
 		});
 
 		// get all brodcast receivers
 		List<Node> receiverList = document.selectNodes("//manifest/application/receiver");
 		receiverList.forEach(node -> {
-			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
 		});
 
 		// get all providers
 		List<Node> providerList = document.selectNodes("//manifest/application/provider");
 		providerList.forEach(node -> {
-			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
 		});
 
 		// iterate through child elements of root with element name "foo"
@@ -163,6 +231,8 @@ public class Main {
 			// do something
 		}
 //		elementSet.forEach(e -> System.out.println(e));
+
+		return null;
 	}
 
 	private static File getTargetFolder(String[] args) {
