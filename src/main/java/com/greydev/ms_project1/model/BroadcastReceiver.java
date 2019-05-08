@@ -5,26 +5,26 @@ import java.util.List;
 public class BroadcastReceiver {
 
 	// save as file or String?
-	private String smaliClassPath;
 	private String className;
+	private List<String> smaliClassPath;
 	private List<String> intentFilterActions;
 
 	public BroadcastReceiver() {
 
 	}
 
-	public BroadcastReceiver(String smaliClassPath, String className, List<String> intentFilterActions) {
+	public BroadcastReceiver(String className, List<String> smaliClassPath, List<String> intentFilterActions) {
 		super();
-		this.smaliClassPath = smaliClassPath;
 		this.className = className;
+		this.smaliClassPath = smaliClassPath;
 		this.intentFilterActions = intentFilterActions;
 	}
 
-	public String getSmaliClassPath() {
+	public List<String> getSmaliClassPath() {
 		return smaliClassPath;
 	}
 
-	public void setSmaliClassPath(String smaliClassPath) {
+	public void setSmaliClassPath(List<String> smaliClassPath) {
 		this.smaliClassPath = smaliClassPath;
 	}
 

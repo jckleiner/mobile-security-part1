@@ -6,7 +6,7 @@ public class Activity {
 
 	// save as file or String?
 	private String className;
-	private String smaliClassPath;
+	private List<String> smaliClassPath;
 	private List<String> intentFilterActions;
 
 	// add intent filter category?
@@ -15,18 +15,18 @@ public class Activity {
 
 	}
 
-	public Activity(String className, String smaliClassPath, List<String> intentFilterActions) {
+	public Activity(String className, List<String> smaliClassPath, List<String> intentFilterActions) {
 		super();
 		this.className = className;
 		this.smaliClassPath = smaliClassPath;
 		this.intentFilterActions = intentFilterActions;
 	}
 
-	public String getSmaliClassPath() {
+	public List<String> getSmaliClassPath() {
 		return smaliClassPath;
 	}
 
-	public void setSmaliClassPath(String smaliClassPath) {
+	public void setSmaliClassPath(List<String> smaliClassPath) {
 		this.smaliClassPath = smaliClassPath;
 	}
 

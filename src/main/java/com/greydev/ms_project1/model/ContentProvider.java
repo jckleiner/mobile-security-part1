@@ -1,27 +1,29 @@
 package com.greydev.ms_project1.model;
 
+import java.util.List;
+
 public class ContentProvider {
 
 	// save as file or String?
-	private String smaliClassPath;
 	private String className;
+	private List<String> smaliClassPath;
 
 	public ContentProvider() {
 
 	}
 
-	public ContentProvider(String smaliClassPath, String className) {
+	public ContentProvider(String className, List<String> smaliClassPath) {
 		super();
-		this.smaliClassPath = smaliClassPath;
 		this.className = className;
+		this.smaliClassPath = smaliClassPath;
 	}
 
 	// no intent-filter
-	public String getSmaliClassPath() {
+	public List<String> getSmaliClassPath() {
 		return smaliClassPath;
 	}
 
-	public void setSmaliClassPath(String smaliClassPath) {
+	public void setSmaliClassPath(List<String> smaliClassPath) {
 		this.smaliClassPath = smaliClassPath;
 	}
 

@@ -15,8 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -37,6 +37,9 @@ import com.greydev.ms_project1.model.Service;
  *  DOES NOT WORK WITH GIT BASH ?
  */
 
+/*
+ * TODO maybe: tool -delete -gui <folderPath>
+ */
 public class Main {
 
 	private static final String PREFIX_GENERATED = "generated_";
@@ -52,6 +55,7 @@ public class Main {
 		List<File> targetFolderItems = Arrays.asList(targetFolder.listFiles());
 		List<File> apkFiles = new ArrayList<>();
 		List<String> generatedFolderPaths = new ArrayList<>();
+		List<String> folderPathsToDelete = new ArrayList<>();
 		List<Integer> exitCodes = new ArrayList<>();
 
 		targetFolderItems.forEach(item -> {
@@ -74,20 +78,43 @@ public class Main {
 			if (exitCode == 0) {
 				generatedFolderPaths.add(targetFolder + "\\" + generatedApkFolderName);
 			}
+			folderPathsToDelete.add(targetFolder + "\\" + generatedApkFolderName);
 			exitCodes.add(exitCode);
 		});
 
 		int successCount = Collections.frequency(exitCodes, 0);
 		int failCount = Collections.frequency(exitCodes, 1);
-		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}",
-				apkFiles.size(), successCount, failCount));
+		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}", apkFiles.size(),
+				successCount, failCount));
 
 		generatedFolderPaths.forEach(folderName -> {
 			String smaliFolderPath = targetFolder + "\\" + folderName;
 			System.out.println(smaliFolderPath);
 		});
 
-		populateApkList(generatedFolderPaths);
+		List<Apk> apkList = populateApkList(generatedFolderPaths);
+		apkList.forEach(apk -> System.out.println(apk.toString()));
+
+		deleteGeneratedFiles(folderPathsToDelete);
+
+	}
+
+	public static void deleteGeneratedFiles(List<String> generatedFolderPaths) {
+
+		System.out.println("Deleting " + generatedFolderPaths.size() + " generated folders...");
+
+		generatedFolderPaths.forEach(folderPath -> {
+			File currentFolder = new File(folderPath);
+			if (currentFolder.isDirectory()) {
+				try {
+					FileUtils.deleteDirectory(currentFolder);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+		System.out.println("Deleted " + generatedFolderPaths.size() + " generated folders successfully.");
 
 	}
 
@@ -131,49 +158,15 @@ public class Main {
 		apk.setPackageName(packageName);
 		apk.setAppName(appName);
 
-		System.out.println("package: " + packageName);
-		System.out.println("appName: " + appName);
-
-		// <manifest> can contain:
-		// <compatible-screens>
-		// <instrumentation>
-		// <permission>
-		// <permission-group>
-		// <permission-tree>
-		// <supports-gl-texture>
-		// <supports-screens>
-		// <uses-configuration>
-		// <uses-feature>
-		// <uses-permission>
-		// <uses-permission-sdk-23>
-		// <uses-sdk>
-		// <application>
-
-		// <application> can contain:
-		// <activity>
-		// <activity-alias>
-		// <meta-data>
-		// <service>
-		// <receiver>
-		// <provider>
-		// <uses-library>
-
-		// <activity> can contain:
-		// <intent-filter>
-		// <meta-data>
-		// <layout>
-
-		// <intent-filter> can contain:
-		// <action>
-		// <category>
-		// <data>
+		System.out.println("\n\npackage: " + packageName + " *******************************");
+		System.out.println("appName: " + appName + " *******************************");
 
 		Set<String> elementSet = new HashSet<>();
 		// iterate through child elements of root
 		for (Iterator<Element> it = root.elementIterator(); it.hasNext();) {
 			Element element = it.next();
-//			elementSet.add(element.getName());
-//			System.out.println(element.getName());
+			//			elementSet.add(element.getName());
+			//			System.out.println(element.getName());
 		}
 
 		List<Activity> activities = new ArrayList<>();
@@ -183,8 +176,9 @@ public class Main {
 
 		// get all activities
 		List<Node> activityList = document.selectNodes("//manifest/application/activity");
+		System.out.println("ACTIVITY found: " + activityList.size());
 		activityList.forEach(node -> {
-//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+			//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
 			String fullClassName = node.valueOf("@android:name");
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 
@@ -192,47 +186,98 @@ public class Main {
 			// find intentFilterActions
 			ProcessBuilder processBuilder = new ProcessBuilder();
 			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
-			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr " + className);
+			/* adding \ at the beginning of the class name eliminates files with slightly different names:
+			   "WorkingActivity" vs "ServiceWorkingActivity" */
+			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
+			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			// TODO assuming only a single line is returned when file is found.
+			// TODO platform compatibility must be implemented. Commands, file separators etc.
+			//			System.out.println("ACTIVITY: dir /s /b | findstr " + "\\" + className + " returns: ");
+			//			smaliClassPathList.forEach(path -> System.out.println(path));
 
-			Activity act = new Activity();
-
+			// '//intent-filter/action' returns all nodes inside the xml file independent of the current node
+			// 'intent-filter/action' returns only the child intent-filer/actions for the current node
+			List<Node> intentActionList = node.selectNodes("intent-filter/action");
+			List<String> intentList = new ArrayList<>();
+			intentActionList.forEach(action -> {
+				String intent = action.valueOf("@android:name");
+				//				System.out.println("intent: " + intent);
+				intentList.add(intent);
+			});
+			apk.getActivities().add(new Activity(className, smaliClassPathList, intentList));
 		});
 
 		// get all services
 		List<Node> serviceList = document.selectNodes("//manifest/application/service");
+		System.out.println("SERVICE found: " + serviceList.size());
 		serviceList.forEach(node -> {
-//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+
+			String fullClassName = node.valueOf("@android:name");
+			String className = StringUtils.substringAfterLast(fullClassName, ".");
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
+			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
+			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			//			System.out.println("SERVICE: dir /s /b | findstr " + "\\" + className + " returns: ");
+			//			smaliClassPathList.forEach(path -> System.out.println(path));
+
+			// '//intent-filter/action' returns all nodes inside the xml file independent of the current node
+			// 'intent-filter/action' returns only the child intent-filer/actions for the current node
+			List<Node> intentActionList = node.selectNodes("intent-filter/action");
+			List<String> intentList = new ArrayList<>();
+			intentActionList.forEach(action -> {
+				String intent = action.valueOf("@android:name");
+				//				System.out.println("intent: " + intent);
+				intentList.add(intent);
+			});
+			apk.getServices().add(new Service(className, smaliClassPathList, intentList));
 		});
 
 		// get all brodcast receivers
 		List<Node> receiverList = document.selectNodes("//manifest/application/receiver");
+		System.out.println("BROADCAST RECEIVER found: " + receiverList.size());
 		receiverList.forEach(node -> {
-//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+
+			String fullClassName = node.valueOf("@android:name");
+			String className = StringUtils.substringAfterLast(fullClassName, ".");
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
+			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
+			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			//			System.out.println("SERVICE: dir /s /b | findstr " + "\\" + className + " returns: ");
+			//			smaliClassPathList.forEach(path -> System.out.println(path));
+
+			// '//intent-filter/action' returns all nodes inside the xml file independent of the current node
+			// 'intent-filter/action' returns only the child intent-filer/actions for the current node
+			List<Node> intentActionList = node.selectNodes("intent-filter/action");
+			List<String> intentList = new ArrayList<>();
+			intentActionList.forEach(action -> {
+				String intent = action.valueOf("@android:name");
+				//				System.out.println("intent: " + intent);
+				intentList.add(intent);
+			});
+			apk.getBrodcastReceivers().add(new BroadcastReceiver(className, smaliClassPathList, intentList));
+
 		});
 
 		// get all providers
 		List<Node> providerList = document.selectNodes("//manifest/application/provider");
+		System.out.println("PROVIDER found: " + providerList.size());
 		providerList.forEach(node -> {
-//			System.out.println(node.getName() + ": " + node.valueOf("@android:name"));
+
+			String fullClassName = node.valueOf("@android:name");
+			String className = StringUtils.substringAfterLast(fullClassName, ".");
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
+			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
+			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			//			System.out.println("SERVICE: dir /s /b | findstr " + "\\" + className + " returns: ");
+			//			smaliClassPathList.forEach(path -> System.out.println(path));
+
+			apk.getContentProviders().add(new ContentProvider(className, smaliClassPathList));
+
 		});
-
-		// iterate through child elements of root with element name "foo"
-		// NPE
-		for (Iterator<Element> it = root.element("application").elementIterator(); it.hasNext();) {
-			Element element = it.next();
-			elementSet.add(element.getName());
-		}
-
-		// element.valueOf("@android:name");
-
-		// iterate through attributes of root
-		for (Iterator<Attribute> it = root.attributeIterator(); it.hasNext();) {
-			Attribute attribute = it.next();
-			// do something
-		}
-//		elementSet.forEach(e -> System.out.println(e));
-
-		return null;
+		return apk;
 	}
 
 	private static File getTargetFolder(String[] args) {
@@ -277,7 +322,7 @@ public class Main {
 			}
 
 			exitCode = process.waitFor(); // returns 0 on success, 1 on failure
-			System.out.println("\nExited with error code : " + exitCode);
+			//			System.out.println("\nExited with error code : " + exitCode);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -286,4 +331,31 @@ public class Main {
 		}
 		return exitCode;
 	}
+
+	private static List<String> startProcessWithListOutput(ProcessBuilder processBuilder) {
+		int exitCode = 1;
+		List<String> consoleOutputLines = new ArrayList<>();
+		try {
+			// allows the error message generated from the process to be sent to input stream
+			processBuilder.redirectErrorStream(true);
+			Process process = processBuilder.start();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line;
+
+			while ((line = reader.readLine()) != null) {
+				//				System.out.println(line);
+				consoleOutputLines.add(line);
+			}
+
+			exitCode = process.waitFor(); // returns 0 on success, 1 on failure
+			//			System.out.println("\nExited with error code : " + exitCode);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return consoleOutputLines;
+	}
+
 }

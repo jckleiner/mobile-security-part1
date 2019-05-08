@@ -1,5 +1,7 @@
 package com.greydev.ms_project1.model;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Apk {
@@ -11,10 +13,18 @@ public class Apk {
 	private String smaliFolderPath;
 	private String decodedManifestFilePath;
 
-	private List<Activity> activities;
-	private List<BroadcastReceiver> brodcastReceivers;
-	private List<ContentProvider> contentProviders;
-	private List<Service> services;
+	private List<Activity> activities = new ArrayList<>();
+	private List<BroadcastReceiver> brodcastReceivers = new ArrayList<>();
+	private List<ContentProvider> contentProviders = new ArrayList<>();
+	private List<Service> services = new ArrayList<>();
+
+	@Override
+	public String toString() {
+		return MessageFormat.format("\nApp Name: {0}\nPackage Name: {1}\nSmali Folder Path: {2}\nDecoded Manifest File Path: {3}\n"
+				+ "Activity count: {4}\nbrodcastReceiver count: {5}\ncontentProvider count: {6}\nservice count: {7}",
+				this.appName, this.packageName, this.smaliFolderPath, this.decodedManifestFilePath,
+				this.activities.size(), this.brodcastReceivers.size(), this.contentProviders.size(), this.services.size());
+	}
 
 	public String getAppName() {
 		return appName;
