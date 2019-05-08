@@ -1,8 +1,7 @@
 package com.greydev.ms_project1.model;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class Apk {
 
@@ -13,10 +12,10 @@ public class Apk {
 	private String smaliFolderPath;
 	private String decodedManifestFilePath;
 
-	private List<Activity> activities = new ArrayList<>();
-	private List<BroadcastReceiver> brodcastReceivers = new ArrayList<>();
-	private List<ContentProvider> contentProviders = new ArrayList<>();
-	private List<Service> services = new ArrayList<>();
+	private HashMap<String, Activity> activities = new HashMap<>();
+	private HashMap<String, BroadcastReceiver> brodcastReceivers = new HashMap<>();
+	private HashMap<String, ContentProvider> contentProviders = new HashMap<>();
+	private HashMap<String, Service> services = new HashMap<>();
 
 	@Override
 	public String toString() {
@@ -58,35 +57,35 @@ public class Apk {
 		this.decodedManifestFilePath = decodedManifestFilePath;
 	}
 
-	public List<Activity> getActivities() {
+	public HashMap<String, Activity> getActivities() {
 		return activities;
 	}
 
-	public void setActivities(List<Activity> activities) {
+	public void setActivities(HashMap<String, Activity> activities) {
 		this.activities = activities;
 	}
 
-	public List<BroadcastReceiver> getBrodcastReceivers() {
+	public HashMap<String, BroadcastReceiver> getBrodcastReceivers() {
 		return brodcastReceivers;
 	}
 
-	public void setBrodcastReceivers(List<BroadcastReceiver> brodcastReceivers) {
+	public void setBrodcastReceivers(HashMap<String, BroadcastReceiver> brodcastReceivers) {
 		this.brodcastReceivers = brodcastReceivers;
 	}
 
-	public List<ContentProvider> getContentProviders() {
+	public HashMap<String, ContentProvider> getContentProviders() {
 		return contentProviders;
 	}
 
-	public void setContentProviders(List<ContentProvider> contentProviders) {
+	public void setContentProviders(HashMap<String, ContentProvider> contentProviders) {
 		this.contentProviders = contentProviders;
 	}
 
-	public List<Service> getServices() {
+	public HashMap<String, Service> getServices() {
 		return services;
 	}
 
-	public void setServices(List<Service> services) {
+	public void setServices(HashMap<String, Service> services) {
 		this.services = services;
 	}
 

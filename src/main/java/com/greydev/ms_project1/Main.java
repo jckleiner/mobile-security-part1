@@ -39,27 +39,38 @@ import com.greydev.ms_project1.model.Service;
 
 /*
  * TODO maybe: tool -delete -gui <folderPath>
+ * TODO List<String> smaliClassPath could also be a HashMap<String, String/File>
  */
 public class Main {
 
 	private static final String PREFIX_GENERATED = "generated_";
 
-	public static void main(String[] args) throws DocumentException {
+	public static void main(String[] args) {
 		// TODO problem when there is 2 apks with the same name
 		// TODO full path / relative path parsing might be error prone for different platforms
 
-		System.out.println("user input: '" + args[0] + "'");
+		System.out.println("user input: " + args[0]);
 
-		File targetFolder = getTargetFolder(args);
+		if (args.length != 1) {
+			System.out.println("Expecting only one argument");
+			System.exit(0);
+		}
 
-		List<File> targetFolderItems = Arrays.asList(targetFolder.listFiles());
+		File targetFolder = getTargetFolder(args[0]);
+
+		if (targetFolder == null) {
+			System.out.println("Directory does not exist or is not a directory!");
+			System.exit(0);
+		}
+
+		List<File> targetFolderContent = Arrays.asList(targetFolder.listFiles());
 		List<File> apkFiles = new ArrayList<>();
 		List<String> generatedFolderPaths = new ArrayList<>();
 		List<String> folderPathsToDelete = new ArrayList<>();
 		List<Integer> exitCodes = new ArrayList<>();
 
-		targetFolderItems.forEach(item -> {
-			if (item.isFile() && item.getName().endsWith(".apk")) {
+		targetFolderContent.forEach(item -> {
+			if (item.isFile() && (StringUtils.endsWithIgnoreCase(item.getName(), ".apk"))) {
 				apkFiles.add(item);
 			}
 		});
@@ -70,15 +81,15 @@ public class Main {
 		apkFiles.forEach(apkFile -> {
 			// TODO refactor so it also works with macOs
 			String apkPath = apkFile.getPath();
-			String generatedApkFolderName = PREFIX_GENERATED + StringUtils.removeEnd(apkFile.getName(), ".apk");
+			String generatedApkFolderName = PREFIX_GENERATED + StringUtils.removeEndIgnoreCase(apkFile.getName(), ".apk");
 			String commandToExecute = MessageFormat.format("apktool d {0} -o {1}", apkPath, generatedApkFolderName);
 			processBuilder.command("cmd.exe", "/c", commandToExecute);
 			int exitCode = startProcess(processBuilder);
 
 			if (exitCode == 0) {
-				generatedFolderPaths.add(targetFolder + "\\" + generatedApkFolderName);
+				generatedFolderPaths.add(targetFolder.getAbsolutePath() + "\\" + generatedApkFolderName);
 			}
-			folderPathsToDelete.add(targetFolder + "\\" + generatedApkFolderName);
+			folderPathsToDelete.add(targetFolder.getAbsolutePath() + "\\" + generatedApkFolderName);
 			exitCodes.add(exitCode);
 		});
 
@@ -87,20 +98,25 @@ public class Main {
 		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}", apkFiles.size(),
 				successCount, failCount));
 
-		generatedFolderPaths.forEach(folderName -> {
-			String smaliFolderPath = targetFolder + "\\" + folderName;
-			System.out.println(smaliFolderPath);
+		System.out.println("generated file count: " + generatedFolderPaths.size());
+		generatedFolderPaths.forEach(folderPath -> {
+			System.out.println(folderPath);
 		});
 
-		List<Apk> apkList = populateApkList(generatedFolderPaths);
+		List<Apk> apkList = new ArrayList<>();
+		generatedFolderPaths.forEach(folderPath -> {
+			Apk apk = parse(folderPath);
+			if (apk != null) {
+				apkList.add(apk);
+			}
+		});
+
 		apkList.forEach(apk -> System.out.println(apk.toString()));
 
 		deleteGeneratedFiles(folderPathsToDelete);
-
 	}
 
 	public static void deleteGeneratedFiles(List<String> generatedFolderPaths) {
-
 		System.out.println("Deleting " + generatedFolderPaths.size() + " generated folders...");
 
 		generatedFolderPaths.forEach(folderPath -> {
@@ -113,26 +129,11 @@ public class Main {
 				}
 			}
 		});
-
 		System.out.println("Deleted " + generatedFolderPaths.size() + " generated folders successfully.");
-
-	}
-
-	public static List<Apk> populateApkList(List<String> generatedFolderPaths) {
-		System.out.println("generated file count: " + generatedFolderPaths.size());
-		List<Apk> apkList = new ArrayList<>();
-		generatedFolderPaths.forEach(folderPath -> {
-			Apk apk = parse(folderPath);
-			if (apk != null) {
-				apkList.add(apk);
-			}
-		});
-		return apkList;
 	}
 
 	// TODO rename
 	public static Apk parse(String folderPath) {
-
 		File manifestFile = new File(folderPath + "\\AndroidManifest.xml");
 
 		if (!manifestFile.isFile()) {
@@ -189,7 +190,7 @@ public class Main {
 			/* adding \ at the beginning of the class name eliminates files with slightly different names:
 			   "WorkingActivity" vs "ServiceWorkingActivity" */
 			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
-			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			List<String> smaliClassPathList = startProcessWithOutputList(processBuilder);
 			// TODO assuming only a single line is returned when file is found.
 			// TODO platform compatibility must be implemented. Commands, file separators etc.
 			//			System.out.println("ACTIVITY: dir /s /b | findstr " + "\\" + className + " returns: ");
@@ -204,7 +205,8 @@ public class Main {
 				//				System.out.println("intent: " + intent);
 				intentList.add(intent);
 			});
-			apk.getActivities().add(new Activity(className, smaliClassPathList, intentList));
+			// some apks have the same class names with different package names!
+			apk.getActivities().put(fullClassName, new Activity(className, smaliClassPathList, intentList));
 		});
 
 		// get all services
@@ -217,7 +219,7 @@ public class Main {
 			ProcessBuilder processBuilder = new ProcessBuilder();
 			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
 			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
-			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			List<String> smaliClassPathList = startProcessWithOutputList(processBuilder);
 			//			System.out.println("SERVICE: dir /s /b | findstr " + "\\" + className + " returns: ");
 			//			smaliClassPathList.forEach(path -> System.out.println(path));
 
@@ -230,7 +232,7 @@ public class Main {
 				//				System.out.println("intent: " + intent);
 				intentList.add(intent);
 			});
-			apk.getServices().add(new Service(className, smaliClassPathList, intentList));
+			apk.getServices().put(fullClassName, new Service(className, smaliClassPathList, intentList));
 		});
 
 		// get all brodcast receivers
@@ -243,7 +245,7 @@ public class Main {
 			ProcessBuilder processBuilder = new ProcessBuilder();
 			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
 			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
-			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			List<String> smaliClassPathList = startProcessWithOutputList(processBuilder);
 			//			System.out.println("SERVICE: dir /s /b | findstr " + "\\" + className + " returns: ");
 			//			smaliClassPathList.forEach(path -> System.out.println(path));
 
@@ -256,7 +258,7 @@ public class Main {
 				//				System.out.println("intent: " + intent);
 				intentList.add(intent);
 			});
-			apk.getBrodcastReceivers().add(new BroadcastReceiver(className, smaliClassPathList, intentList));
+			apk.getBrodcastReceivers().put(fullClassName, new BroadcastReceiver(className, smaliClassPathList, intentList));
 
 		});
 
@@ -270,40 +272,28 @@ public class Main {
 			ProcessBuilder processBuilder = new ProcessBuilder();
 			processBuilder.directory(new File(apk.getSmaliFolderPath())); // sets the working directory for the processBuilder
 			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr \\" + className);
-			List<String> smaliClassPathList = startProcessWithListOutput(processBuilder);
+			List<String> smaliClassPathList = startProcessWithOutputList(processBuilder);
 			//			System.out.println("SERVICE: dir /s /b | findstr " + "\\" + className + " returns: ");
 			//			smaliClassPathList.forEach(path -> System.out.println(path));
 
-			apk.getContentProviders().add(new ContentProvider(className, smaliClassPathList));
+			apk.getContentProviders().put(fullClassName, new ContentProvider(className, smaliClassPathList));
 
 		});
 		return apk;
 	}
 
-	private static File getTargetFolder(String[] args) {
-		String targetFolderPath = null;
-
-		if (args.length != 1) {
-			System.out.println("Expecting only one argument");
-			System.exit(0);
-		}
-		if (args[0].startsWith("/") || args[0].startsWith("C:\\")) {
-			targetFolderPath = args[0];
-		}
-		else {
+	private static File getTargetFolder(String folderPath) {
+		if (!(folderPath.startsWith("/") || folderPath.startsWith("C:\\"))) {
 			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
-			System.out.println(currentDirectoryPath);
-			String userInput = StringUtils.remove(args[0], "./");
-			targetFolderPath = currentDirectoryPath + userInput;
+			String userInput = StringUtils.remove(folderPath, "./"); // remove ./ if present
+			folderPath = currentDirectoryPath + userInput;
 		}
+		System.out.println("Searching for folder: " + folderPath + "\n");
 
-		System.out.println("parsed folder path: " + targetFolderPath + "\n");
-
-		File targetFolder = new File(targetFolderPath);
+		File targetFolder = new File(folderPath);
 		if (!targetFolder.isDirectory()) {
-			System.out.println("Directory does not exist or is not a directory!");
-			System.exit(0);
+			return null;
 		}
 		return targetFolder;
 	}
@@ -332,7 +322,7 @@ public class Main {
 		return exitCode;
 	}
 
-	private static List<String> startProcessWithListOutput(ProcessBuilder processBuilder) {
+	private static List<String> startProcessWithOutputList(ProcessBuilder processBuilder) {
 		int exitCode = 1;
 		List<String> consoleOutputLines = new ArrayList<>();
 		try {
