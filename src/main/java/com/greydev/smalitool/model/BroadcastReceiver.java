@@ -1,19 +1,19 @@
-package com.greydev.ms_project1.model;
+package com.greydev.smalitool.model;
 
 import java.util.List;
 
-public class Service {
+public class BroadcastReceiver {
 
 	// save as file or String?
 	private String className;
 	private List<String> smaliClassPath;
 	private List<String> intentFilterActions;
 
-	public Service() {
+	public BroadcastReceiver() {
 
 	}
 
-	public Service(String className, List<String> smaliClassPath, List<String> intentFilterActions) {
+	public BroadcastReceiver(String className, List<String> smaliClassPath, List<String> intentFilterActions) {
 		super();
 		this.className = className;
 		this.smaliClassPath = smaliClassPath;

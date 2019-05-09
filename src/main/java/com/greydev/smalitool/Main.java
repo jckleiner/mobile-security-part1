@@ -1,4 +1,4 @@
-package com.greydev.ms_project1;
+package com.greydev.smalitool;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +11,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 
-import com.greydev.ms_project1.model.Apk;
+import com.greydev.smalitool.model.Apk;
 
 /*
  * To copy any apk from the emulator to your current directory do the following in your terminal:

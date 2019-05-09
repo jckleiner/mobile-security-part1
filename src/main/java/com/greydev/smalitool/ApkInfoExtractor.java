@@ -1,4 +1,4 @@
-package com.greydev.ms_project1;
+package com.greydev.smalitool;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,11 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
 
-import com.greydev.ms_project1.model.Activity;
-import com.greydev.ms_project1.model.Apk;
-import com.greydev.ms_project1.model.BroadcastReceiver;
-import com.greydev.ms_project1.model.ContentProvider;
-import com.greydev.ms_project1.model.Service;
+import com.greydev.smalitool.model.Activity;
+import com.greydev.smalitool.model.Apk;
+import com.greydev.smalitool.model.BroadcastReceiver;
+import com.greydev.smalitool.model.ContentProvider;
+import com.greydev.smalitool.model.Service;
 
 public class ApkInfoExtractor {
 

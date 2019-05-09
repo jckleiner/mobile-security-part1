@@ -1,4 +1,4 @@
-package com.greydev.ms_project1.model;
+package com.greydev.smalitool.model;
 
 import java.util.List;
 
