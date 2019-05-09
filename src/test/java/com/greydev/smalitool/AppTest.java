@@ -1,4 +1,4 @@
-package com.greydev.ms_project1;
+package com.greydev.smalitool;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
