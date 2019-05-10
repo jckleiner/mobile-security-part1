@@ -13,8 +13,12 @@ import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Util {
+
+	private static final Logger LOG = Util.getConfiguredLogger(Util.class);
 
 	/**
 	 * @param fileName         name of the file to search.
@@ -67,7 +71,7 @@ public class Util {
 	}
 
 	public static int startProcess(ProcessBuilder processBuilder) {
-		System.out.println("Starting process...");
+		LOG.info("Starting process...");
 		int exitCode = 1;
 		try {
 			processBuilder.redirectErrorStream(true); // allows the error message generated from the process to be sent to input stream
@@ -76,11 +80,11 @@ public class Util {
 			String line;
 
 			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
+				LOG.info(line);
 			}
 
 			exitCode = process.waitFor(); // returns 0 on success, 1 on failure
-			//			System.out.println("\nExited with error code : " + exitCode);
+			//			LOG.info("\nExited with error code : " + exitCode);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -90,8 +94,10 @@ public class Util {
 		return exitCode;
 	}
 
-	public static void deleteGeneratedFiles(List<String> generatedFolderPaths) {
-		System.out.println("Deleting " + generatedFolderPaths.size() + " generated folders...");
+	public static void deleteFiles(List<String> generatedFolderPaths) {
+		LOG.info("Deleting "
+				+ Objects.requireNonNull(generatedFolderPaths, "generatedFolderPaths can't be empty").size()
+				+ " generated folders...");
 
 		generatedFolderPaths.forEach(folderPath -> {
 			File currentFolder = new File(folderPath);
@@ -103,24 +109,34 @@ public class Util {
 				}
 			}
 		});
-		System.out.println("Deleted " + generatedFolderPaths.size() + " generated folders successfully.");
+		LOG.info("Deleted " + generatedFolderPaths.size() + " generated folders successfully.");
 	}
 
 	//TODO full path / relative path parsing might be error prone for different platforms
-	public static File getTargetFolder(String folderPath) {
+	public static File getFolder(String folderPath) {
 		if (!(folderPath.startsWith("/") || folderPath.startsWith("C:\\"))) {
 			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
 			String userInput = StringUtils.remove(folderPath, "./"); // remove ./ if present
 			folderPath = currentDirectoryPath + userInput;
 		}
-		System.out.println("Searching for folder: " + folderPath + "\n");
+		LOG.info("Searching for folder: " + folderPath + "\n");
 
 		File targetFolder = new File(folderPath);
 		if (!targetFolder.isDirectory()) {
 			return null;
 		}
 		return targetFolder;
+	}
+
+	public static <T> Logger getConfiguredLogger(Class<T> cls) {
+		// System property must be set before initializing the first logger, else it won't read it.
+		// the gotcha with setting a system property programatically is that you need to do it early enough; 
+		// i.e. before the "logger" code tries to use the property value.
+		System.setProperty("smalitool.log.file.path", System.getProperty("user.home") + File.separator + "smalitool.log");
+		//		.class is used when there isn't an instance of the class available.
+		//		.getClass() is used when there is an instance of the class available.
+		return LoggerFactory.getLogger(cls);
 	}
 
 }

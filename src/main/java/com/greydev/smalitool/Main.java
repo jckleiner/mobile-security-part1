@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
+import org.slf4j.Logger;
 
 import com.greydev.smalitool.model.Apk;
 
@@ -27,20 +28,21 @@ import com.greydev.smalitool.model.Apk;
  */
 public class Main {
 
+	private static final Logger LOG = Util.getConfiguredLogger(Main.class);
 	private static final String PREFIX_GENERATED = "generated_";
 
 	public static void main(String[] args) {
-		System.out.println("user input: " + args[0]);
 
 		if (args.length != 1) {
-			System.out.println("Expecting only one argument");
+			LOG.info("Expecting only one argument");
 			System.exit(0);
 		}
+		LOG.info("user input: {}", args[0]);
 
-		File targetFolder = Util.getTargetFolder(args[0]);
+		File targetFolder = Util.getFolder(args[0]);
 
 		if (targetFolder == null) {
-			System.out.println("Directory does not exist or is not a directory!");
+			LOG.info("Directory does not exist or is not a directory!");
 			System.exit(0);
 		}
 
@@ -78,12 +80,12 @@ public class Main {
 
 		int successCount = Collections.frequency(exitCodes, 0);
 		int failCount = Collections.frequency(exitCodes, 1);
-		System.out.println(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}", apkFiles.size(),
+		LOG.info(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}", apkFiles.size(),
 				successCount, failCount));
 
-		System.out.println("generated file count: " + generatedFolderPaths.size());
+		LOG.info("generated file count: " + generatedFolderPaths.size());
 		generatedFolderPaths.forEach(folderPath -> {
-			System.out.println(folderPath);
+			LOG.info(folderPath);
 		});
 
 		List<Apk> apkList = new ArrayList<>();
@@ -98,8 +100,8 @@ public class Main {
 				apkList.add(apk);
 			}
 		});
-		apkList.forEach(apk -> System.out.println(apk.toString()));
-		Util.deleteGeneratedFiles(folderPathsToDelete);
+		apkList.forEach(apk -> LOG.info(apk.toString()));
+		Util.deleteFiles(folderPathsToDelete);
 	}
 
 }

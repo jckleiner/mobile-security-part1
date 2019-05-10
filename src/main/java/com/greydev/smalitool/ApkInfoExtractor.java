@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
+import org.slf4j.Logger;
 
 import com.greydev.smalitool.model.Activity;
 import com.greydev.smalitool.model.Apk;
@@ -17,6 +18,7 @@ import com.greydev.smalitool.model.Service;
 
 public class ApkInfoExtractor {
 
+	private static final Logger LOG = Util.getConfiguredLogger(ApkInfoExtractor.class);
 	private static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
 
 	public static Apk extractApkFromSmaliFolder(String smaliFolderPath)
@@ -24,22 +26,22 @@ public class ApkInfoExtractor {
 
 		final AndroidManifestParser manifestParser = new AndroidManifestParser(smaliFolderPath + "\\" + MANIFEST_FILE_NAME);
 
-		Apk apk = new Apk();
-		apk.setSmaliFolderPath(smaliFolderPath);
-		apk.setDecodedManifestFilePath(manifestParser.getManifestFile().getAbsolutePath());
-
 		String packageName = manifestParser.getPackageName();
 		// TODO remove app name?
 		String appName = StringUtils.substringAfterLast(packageName, ".");
+
+		Apk apk = new Apk();
+		apk.setSmaliFolderPath(smaliFolderPath);
+		apk.setDecodedManifestFilePath(manifestParser.getManifestFile().getAbsolutePath());
 		apk.setPackageName(packageName);
 		apk.setAppName(appName);
 
-		System.out.println("\n\npackage: " + packageName + " *******************************");
-		System.out.println("appName: " + appName + " *******************************");
+		LOG.info("\n\npackage: " + packageName + " *******************************");
+		LOG.info("appName: " + appName + " *******************************");
 
 		// get all activities
 		List<Node> activityList = manifestParser.getActivities();
-		System.out.println("ACTIVITY found: " + activityList.size());
+		LOG.info("ACTIVITY found: " + activityList.size());
 
 		activityList.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -59,7 +61,7 @@ public class ApkInfoExtractor {
 
 		// get all services
 		List<Node> serviceList = manifestParser.getServices();
-		System.out.println("SERVICE found: " + serviceList.size());
+		LOG.info("SERVICE found: " + serviceList.size());
 		serviceList.forEach(node -> {
 
 			String fullClassName = manifestParser.getNodeName(node);
@@ -76,7 +78,7 @@ public class ApkInfoExtractor {
 
 		// get all brodcast receivers
 		List<Node> receiverList = manifestParser.getBroadcastReceivers();
-		System.out.println("BROADCAST RECEIVER found: " + receiverList.size());
+		LOG.info("BROADCAST RECEIVER found: " + receiverList.size());
 		receiverList.forEach(node -> {
 
 			String fullClassName = manifestParser.getNodeName(node);
@@ -93,7 +95,7 @@ public class ApkInfoExtractor {
 
 		// get all providers
 		List<Node> providerList = manifestParser.getContentProviders();
-		System.out.println("PROVIDER found: " + providerList.size());
+		LOG.info("PROVIDER found: " + providerList.size());
 		providerList.forEach(node -> {
 
 			String fullClassName = manifestParser.getNodeName(node);
