@@ -41,9 +41,14 @@ public class FileSystem {
 	public static File getFolder(String folderPath) {
 		if (!(folderPath.startsWith("/") || folderPath.startsWith("C:\\"))) {
 			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
+			LOG.info("FileSystems.getDefault().getPath(\".\").toAbsolutePath(): {}", path);
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
-			String userInput = StringUtils.remove(folderPath, "./"); // remove ./ if present
-			folderPath = currentDirectoryPath + userInput;
+			folderPath = StringUtils.removeStart(folderPath, "./"); // remove ./ if present (unix current dir)
+			folderPath = StringUtils.removeStart(folderPath, ".\\"); // remove .\ if present (windows current dir)
+			if (!StringUtils.equals(folderPath, ".")) {
+				folderPath = "";
+			}
+			folderPath = currentDirectoryPath + folderPath;
 		}
 		LOG.info("Searching for folder: " + folderPath + "\n");
 
