@@ -37,9 +37,9 @@ public class Main {
 			LOG.info("Expecting only one argument");
 			System.exit(0);
 		}
-		LOG.info("user input: {}", args[0]);
+		LOG.info("input: {}", args[0]);
 
-		File targetFolder = Util.getFolder(args[0]);
+		File targetFolder = FileSystem.getFolder(args[0]);
 
 		if (targetFolder == null) {
 			LOG.info("Directory does not exist or is not a directory!");
@@ -101,7 +101,7 @@ public class Main {
 			}
 		});
 		apkList.forEach(apk -> LOG.info(apk.toString()));
-		Util.deleteFiles(folderPathsToDelete);
+		FileSystem.deleteFiles(folderPathsToDelete);
 	}
 
 }

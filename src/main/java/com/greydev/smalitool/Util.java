@@ -2,57 +2,22 @@ package com.greydev.smalitool;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Util {
 
 	private static final Logger LOG = Util.getConfiguredLogger(Util.class);
+	private static final OS OPERATING_SYSTEM = Util.detectOs();
 
-	/**
-	 * @param fileName         name of the file to search.
-	 * @param workingDirectory base directory for the search.
-	 * @return List of all absolute paths find for the keyword, empty list if nothing was found.
-	 * @throws FileNotFoundException if the file is not found or is not a directory.
-	 * @throws NullPointerException  if fileName or workingDirectory is null.
-	 */
-	public static List<String> recursiveSearch(String fileName, File workingDirectory)
-			throws FileNotFoundException {
-		// TODO platform compatibility must be implemented. Commands, file separators etc.
-
-		if (!Objects.requireNonNull(workingDirectory, "Working directory can't be null").isDirectory()) {
-			throw new FileNotFoundException("Working directory not found.");
-		}
-
-		/* adding \ at the beginning of the class name eliminates files with slightly different names:
-		 "WorkingActivity" vs "ServiceWorkingActivity" */
-		ProcessBuilder processBuilder = new ProcessBuilder()
-				.directory(workingDirectory)
-				.command("cmd.exe", "/c", "dir /s /b | findstr \\" + Objects.requireNonNull(fileName));
-		List<String> smaliClassPathList = startProcessWithOutputList(processBuilder);
-
-		if (smaliClassPathList == null) {
-			return new ArrayList<String>();
-		}
-		return smaliClassPathList;
-	}
-
-	//	Optional<Path> hit = Files.walk(myPath)
-	//		   .filter(file -> file.getFileName().equals(myName))
-	//		   .findAny();
-
-	private static List<String> startProcessWithOutputList(ProcessBuilder processBuilder) {
+	public static List<String> startProcessWithOutputList(ProcessBuilder processBuilder) {
 		List<String> consoleOutputLines = new ArrayList<>();
 		try {
 			// allows the error message generated from the process to be sent to input stream
@@ -94,41 +59,6 @@ public class Util {
 		return exitCode;
 	}
 
-	public static void deleteFiles(List<String> generatedFolderPaths) {
-		LOG.info("Deleting "
-				+ Objects.requireNonNull(generatedFolderPaths, "generatedFolderPaths can't be empty").size()
-				+ " generated folders...");
-
-		generatedFolderPaths.forEach(folderPath -> {
-			File currentFolder = new File(folderPath);
-			if (currentFolder.isDirectory()) {
-				try {
-					FileUtils.deleteDirectory(currentFolder);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-		LOG.info("Deleted " + generatedFolderPaths.size() + " generated folders successfully.");
-	}
-
-	//TODO full path / relative path parsing might be error prone for different platforms
-	public static File getFolder(String folderPath) {
-		if (!(folderPath.startsWith("/") || folderPath.startsWith("C:\\"))) {
-			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
-			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
-			String userInput = StringUtils.remove(folderPath, "./"); // remove ./ if present
-			folderPath = currentDirectoryPath + userInput;
-		}
-		LOG.info("Searching for folder: " + folderPath + "\n");
-
-		File targetFolder = new File(folderPath);
-		if (!targetFolder.isDirectory()) {
-			return null;
-		}
-		return targetFolder;
-	}
-
 	public static <T> Logger getConfiguredLogger(Class<T> cls) {
 		// System property must be set before initializing the first logger, else it won't read it.
 		// the gotcha with setting a system property programatically is that you need to do it early enough; 
@@ -139,4 +69,54 @@ public class Util {
 		return LoggerFactory.getLogger(cls);
 	}
 
+	public static boolean isOsWindows() {
+		return Util.OPERATING_SYSTEM == OS.WINDOWS;
+	}
+
+	public static boolean isOsUnixBased() {
+		return (Util.OPERATING_SYSTEM == OS.MAC
+				|| Util.OPERATING_SYSTEM == OS.UNIX
+				|| Util.OPERATING_SYSTEM == OS.POSIX_UNIX);
+	}
+
+	public static OS detectOs() {
+		String osName = System.getProperty("os.name");
+		LOG.debug("Detected OS: {}", osName);
+		Objects.requireNonNull(osName);
+		OS os = OS.OTHER;
+		osName = osName.toLowerCase(Locale.ENGLISH);
+		if (osName.contains("windows")) {
+			os = OS.WINDOWS;
+		}
+		else if (osName.contains("linux")
+				|| osName.contains("mpe/ix")
+				|| osName.contains("freebsd")
+				|| osName.contains("irix")
+				|| osName.contains("digital unix")
+				|| osName.contains("unix")) {
+			os = OS.UNIX;
+		}
+		else if (osName.contains("mac")) {
+			os = OS.MAC;
+		}
+		else if (osName.contains("sun os")
+				|| osName.contains("sunos")
+				|| osName.contains("solaris")
+				|| osName.contains("hp-ux")
+				|| osName.contains("aix")) {
+			os = OS.POSIX_UNIX;
+		}
+		else {
+			os = OS.OTHER;
+		}
+		return os;
+	}
+
+	public enum OS {
+		WINDOWS,
+		UNIX,
+		POSIX_UNIX,
+		MAC,
+		OTHER;
+	}
 }

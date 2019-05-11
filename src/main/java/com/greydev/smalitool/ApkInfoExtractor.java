@@ -49,7 +49,7 @@ public class ApkInfoExtractor {
 
 			List<String> smaliClassPathList = new ArrayList<>();
 			try {
-				smaliClassPathList = Util.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
+				smaliClassPathList = FileSystem.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -68,7 +68,7 @@ public class ApkInfoExtractor {
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 			List<String> smaliClassPathList = new ArrayList<>();
 			try {
-				smaliClassPathList = Util.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
+				smaliClassPathList = FileSystem.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -85,7 +85,7 @@ public class ApkInfoExtractor {
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 			List<String> smaliClassPathList = new ArrayList<>();
 			try {
-				smaliClassPathList = Util.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
+				smaliClassPathList = FileSystem.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -102,7 +102,7 @@ public class ApkInfoExtractor {
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 			List<String> smaliClassPathList = new ArrayList<>();
 			try {
-				smaliClassPathList = Util.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
+				smaliClassPathList = FileSystem.recursiveSearch(className, new File(apk.getSmaliFolderPath()));
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
