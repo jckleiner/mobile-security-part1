@@ -24,7 +24,7 @@ public class ApkInfoExtractor {
 	public static Apk extractApkFromSmaliFolder(String smaliFolderPath)
 			throws FileNotFoundException, DocumentException {
 
-		final AndroidManifestParser manifestParser = new AndroidManifestParser(smaliFolderPath + "\\" + MANIFEST_FILE_NAME);
+		final AndroidManifestParser manifestParser = new AndroidManifestParser(smaliFolderPath + File.separator + MANIFEST_FILE_NAME);
 
 		String packageName = manifestParser.getPackageName();
 		// TODO remove app name?

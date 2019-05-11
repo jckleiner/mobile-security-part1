@@ -68,13 +68,18 @@ public class Main {
 			String apkPath = apkFile.getPath();
 			String generatedApkFolderName = PREFIX_GENERATED + StringUtils.removeEndIgnoreCase(apkFile.getName(), ".apk");
 			String commandToExecute = MessageFormat.format("apktool d {0} -o {1}", apkPath, generatedApkFolderName);
-			processBuilder.command("cmd.exe", "/c", commandToExecute);
+			if (Util.isOsWindows()) {
+				processBuilder.command("cmd.exe", "/c", commandToExecute);
+			}
+			else if (Util.isOsUnixBased()) {
+				processBuilder.command("/bin/bash", "-c", commandToExecute);
+			}
 			int exitCode = Util.startProcess(processBuilder);
 
 			if (exitCode == 0) {
-				generatedFolderPaths.add(targetFolder.getAbsolutePath() + "\\" + generatedApkFolderName);
+				generatedFolderPaths.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
 			}
-			folderPathsToDelete.add(targetFolder.getAbsolutePath() + "\\" + generatedApkFolderName);
+			folderPathsToDelete.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
 			exitCodes.add(exitCode);
 		});
 
