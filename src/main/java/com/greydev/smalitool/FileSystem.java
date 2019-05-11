@@ -45,7 +45,7 @@ public class FileSystem {
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
 			folderPath = StringUtils.removeStart(folderPath, "./"); // remove ./ if present (unix current dir)
 			folderPath = StringUtils.removeStart(folderPath, ".\\"); // remove .\ if present (windows current dir)
-			if (!StringUtils.equals(folderPath, ".")) {
+			if (StringUtils.equals(folderPath, ".")) {
 				folderPath = "";
 			}
 			folderPath = currentDirectoryPath + folderPath;
