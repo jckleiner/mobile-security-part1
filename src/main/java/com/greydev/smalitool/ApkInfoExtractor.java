@@ -18,7 +18,7 @@ import com.greydev.smalitool.model.Service;
 
 public class ApkInfoExtractor {
 
-	private static final Logger LOG = Util.getConfiguredLogger(ApkInfoExtractor.class);
+	private static final Logger LOG = Utils.getConfiguredLogger(ApkInfoExtractor.class);
 	private static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
 
 	public static Apk extractApkFromSmaliFolder(String smaliFolderPath)

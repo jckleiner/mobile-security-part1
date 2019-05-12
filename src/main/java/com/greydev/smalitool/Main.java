@@ -28,7 +28,7 @@ import com.greydev.smalitool.model.Apk;
  */
 public class Main {
 
-	private static final Logger LOG = Util.getConfiguredLogger(Main.class);
+	private static final Logger LOG = Utils.getConfiguredLogger(Main.class);
 	private static final String PREFIX_GENERATED = "generated_";
 
 	public static void main(String[] args) {
@@ -46,8 +46,6 @@ public class Main {
 			System.exit(0);
 		}
 
-		// **********************************************************************************************
-
 		List<File> targetFolderContent = Arrays.asList(targetFolder.listFiles());
 		List<File> apkFiles = new ArrayList<>();
 		List<String> generatedFolderPaths = new ArrayList<>();
@@ -64,21 +62,21 @@ public class Main {
 		processBuilder.directory(targetFolder); // sets the working directory for the processBuilder
 
 		apkFiles.forEach(apkFile -> {
-			// TODO refactor so it also works with macOs
 			String apkPath = apkFile.getPath();
 			String generatedApkFolderName = PREFIX_GENERATED + StringUtils.removeEndIgnoreCase(apkFile.getName(), ".apk");
 			String commandToExecute = MessageFormat.format("apktool d {0} -o {1}", apkPath, generatedApkFolderName);
-			if (Util.isOsWindows()) {
+			if (Utils.isOsWindows()) {
 				processBuilder.command("cmd.exe", "/c", commandToExecute);
 			}
-			else if (Util.isOsUnixBased()) {
+			else if (Utils.isOsUnixBased()) {
 				processBuilder.command("/bin/bash", "-c", commandToExecute);
 			}
-			int exitCode = Util.startProcess(processBuilder);
+			int exitCode = Utils.startProcess(processBuilder);
 
-			if (exitCode == 0) {
+			if (exitCode == 0) { // success
 				generatedFolderPaths.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
 			}
+			// apktool still generates an empty folder on any error
 			folderPathsToDelete.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
 			exitCodes.add(exitCode);
 		});
@@ -93,13 +91,14 @@ public class Main {
 			LOG.info(folderPath);
 		});
 
+		// extract apks from all the generated smali folders
 		List<Apk> apkList = new ArrayList<>();
 		generatedFolderPaths.forEach(apkFolderPath -> {
 			Apk apk = null;
 			try {
 				apk = ApkInfoExtractor.extractApkFromSmaliFolder(apkFolderPath);
 			} catch (FileNotFoundException | DocumentException e) {
-				e.printStackTrace();
+				LOG.debug(e.getMessage());
 			}
 			if (apk != null) {
 				apkList.add(apk);

@@ -28,7 +28,7 @@ public class AndroidManifestParser {
 	public AndroidManifestParser(String manifestFilePath) throws FileNotFoundException, DocumentException {
 		this.manifestFile = new File(manifestFilePath);
 		if (!this.manifestFile.isFile()) {
-			throw new FileNotFoundException("Android manifest file is not found.");
+			throw new FileNotFoundException("Android manifest file is not found under: " + manifestFilePath);
 		}
 		this.document = new SAXReader().read(manifestFile); // a URL object can also be passed as an argument
 	}

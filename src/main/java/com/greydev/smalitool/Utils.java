@@ -12,10 +12,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Util {
+public class Utils {
 
-	private static final Logger LOG = Util.getConfiguredLogger(Util.class);
-	private static final OS OPERATING_SYSTEM = Util.detectOs();
+	private static final Logger LOG = Utils.getConfiguredLogger(Utils.class);
+	private static final OS OPERATING_SYSTEM = Utils.detectOs();
 
 	public static List<String> startProcessWithOutputList(ProcessBuilder processBuilder) {
 		List<String> consoleOutputLines = new ArrayList<>();
@@ -30,7 +30,7 @@ public class Util {
 				consoleOutputLines.add(line);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.debug(e.getMessage());
 		}
 		return consoleOutputLines;
 	}
@@ -51,10 +51,8 @@ public class Util {
 			exitCode = process.waitFor(); // returns 0 on success, 1 on failure
 			//			LOG.info("\nExited with error code : " + exitCode);
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		} catch (InterruptedException | IOException e) {
+			LOG.debug(e.getMessage());
 		}
 		return exitCode;
 	}
@@ -70,13 +68,13 @@ public class Util {
 	}
 
 	public static boolean isOsWindows() {
-		return Util.OPERATING_SYSTEM == OS.WINDOWS;
+		return Utils.OPERATING_SYSTEM == OS.WINDOWS;
 	}
 
 	public static boolean isOsUnixBased() {
-		return (Util.OPERATING_SYSTEM == OS.MAC
-				|| Util.OPERATING_SYSTEM == OS.UNIX
-				|| Util.OPERATING_SYSTEM == OS.POSIX_UNIX);
+		return (Utils.OPERATING_SYSTEM == OS.MAC
+				|| Utils.OPERATING_SYSTEM == OS.UNIX
+				|| Utils.OPERATING_SYSTEM == OS.POSIX_UNIX);
 	}
 
 	public static OS detectOs() {

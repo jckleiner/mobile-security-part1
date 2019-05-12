@@ -17,12 +17,11 @@ import org.slf4j.Logger;
 
 public class FileSystem {
 
-	private static final Logger LOG = Util.getConfiguredLogger(FileSystem.class);
+	private static final Logger LOG = Utils.getConfiguredLogger(FileSystem.class);
 
 	public static void deleteFiles(List<String> generatedFolderPaths) {
-		LOG.info("Deleting "
-				+ Objects.requireNonNull(generatedFolderPaths, "generatedFolderPaths can't be empty").size()
-				+ " generated folders...");
+		Objects.requireNonNull(generatedFolderPaths, "generatedFolderPaths can't be empty");
+		LOG.info("Deleting {} generated folders...", generatedFolderPaths.size());
 
 		generatedFolderPaths.forEach(folderPath -> {
 			File currentFolder = new File(folderPath);
@@ -30,11 +29,11 @@ public class FileSystem {
 				try {
 					FileUtils.deleteDirectory(currentFolder);
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.debug(e.getMessage());
 				}
 			}
 		});
-		LOG.info("Deleted " + generatedFolderPaths.size() + " generated folders successfully.");
+		LOG.info("Deleted {} generated folders successfully.", generatedFolderPaths.size());
 	}
 
 	//TODO full path / relative path parsing might be error prone for different platforms
@@ -50,7 +49,7 @@ public class FileSystem {
 			}
 			folderPath = currentDirectoryPath + folderPath;
 		}
-		LOG.info("Searching for folder: " + folderPath + "\n");
+		LOG.info("Searching for folder: {}\n", folderPath);
 
 		File targetFolder = new File(folderPath);
 		if (!targetFolder.isDirectory()) {
@@ -64,7 +63,7 @@ public class FileSystem {
 		Objects.requireNonNull(fileName, "fileName can't be null");
 
 		if (!workingDirectory.isDirectory()) {
-			throw new FileNotFoundException("Working directory not found.");
+			throw new FileNotFoundException("Working directory not found under " + workingDirectory.getAbsolutePath());
 		}
 		List<String> pathList = new ArrayList<>();
 		try {
@@ -77,7 +76,7 @@ public class FileSystem {
 						}
 					});
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.debug(e.getMessage());
 		}
 		return pathList;
 	}
@@ -97,23 +96,23 @@ public class FileSystem {
 		Objects.requireNonNull(fileName, "fileName can't be null");
 
 		if (!workingDirectory.isDirectory()) {
-			throw new FileNotFoundException("Working directory not found.");
+			throw new FileNotFoundException("Working directory not found under " + workingDirectory.getAbsolutePath());
 		}
 		// TODO platform compatibility must be implemented. Commands, file separators etc.
 		ProcessBuilder processBuilder = new ProcessBuilder().directory(workingDirectory);
 
 		/* adding \ at the beginning of the class name eliminates files with slightly different names:
 		 "Worker" vs "ListenableWorker" */
-		if (Util.isOsWindows()) {
+		if (Utils.isOsWindows()) {
 			processBuilder.command("cmd.exe", "/c", "dir /s /b | findstr " + File.separator + fileName);
 		}
-		else if (Util.isOsUnixBased()) {
+		else if (Utils.isOsUnixBased()) {
 			processBuilder.command("/bin/bash", "-c", "find $PWD | grep " + File.separator + fileName);
 		}
 		else {
 			LOG.error("Operating system can't be detected");
 		}
-		List<String> smaliClassPathList = Util.startProcessWithOutputList(processBuilder);
+		List<String> smaliClassPathList = Utils.startProcessWithOutputList(processBuilder);
 
 		if (smaliClassPathList == null) {
 			return new ArrayList<String>();
