@@ -21,24 +21,28 @@ public class FileSystem {
 
 	public static void deleteFiles(List<String> generatedFolderPaths) {
 		Objects.requireNonNull(generatedFolderPaths, "generatedFolderPaths can't be empty");
-		LOG.info("Deleting {} generated folders...", generatedFolderPaths.size());
+		LOG.info("Deleting {} generated folder(s)...", generatedFolderPaths.size());
 
 		generatedFolderPaths.forEach(folderPath -> {
+			System.out.println(folderPath);
 			File currentFolder = new File(folderPath);
 			if (currentFolder.isDirectory()) {
 				try {
 					FileUtils.deleteDirectory(currentFolder);
 				} catch (IOException e) {
-					LOG.debug(e.getMessage());
+					LOG.error(e.getMessage());
+					e.printStackTrace();
+					return;
 				}
 			}
 		});
-		LOG.info("Deleted {} generated folders successfully.", generatedFolderPaths.size());
+		LOG.info("Deleted {} generated folder(s) successfully.", generatedFolderPaths.size());
 	}
 
 	//TODO full path / relative path parsing might be error prone for different platforms
 	public static File getFolder(String folderPath) {
 		if (!(folderPath.startsWith("/") || folderPath.startsWith("C:\\"))) {
+			// System.getProperty("user.dir") can be used as well
 			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
 			LOG.info("FileSystems.getDefault().getPath(\".\").toAbsolutePath(): {}", path);
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
@@ -98,7 +102,6 @@ public class FileSystem {
 		if (!workingDirectory.isDirectory()) {
 			throw new FileNotFoundException("Working directory not found under " + workingDirectory.getAbsolutePath());
 		}
-		// TODO platform compatibility must be implemented. Commands, file separators etc.
 		ProcessBuilder processBuilder = new ProcessBuilder().directory(workingDirectory);
 
 		/* adding \ at the beginning of the class name eliminates files with slightly different names:

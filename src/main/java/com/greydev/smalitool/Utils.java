@@ -35,7 +35,7 @@ public class Utils {
 		return consoleOutputLines;
 	}
 
-	public static int startProcess(ProcessBuilder processBuilder) {
+	public static int startProcessWithExitCode(ProcessBuilder processBuilder) {
 		LOG.info("Starting process...");
 		int exitCode = 1;
 		try {

@@ -23,7 +23,7 @@ import com.greydev.smalitool.model.Apk;
  */
 
 /*
- * TODO maybe: tool -delete -gui <folderPath>
+ * TODO maybe: smalitool -delete -gui <folderPath>
  * TODO List<String> smaliClassPath could also be a HashMap<String, String/File>
  */
 public class Main {
@@ -71,7 +71,7 @@ public class Main {
 			else if (Utils.isOsUnixBased()) {
 				processBuilder.command("/bin/bash", "-c", commandToExecute);
 			}
-			int exitCode = Utils.startProcess(processBuilder);
+			int exitCode = Utils.startProcessWithExitCode(processBuilder);
 
 			if (exitCode == 0) { // success
 				generatedFolderPaths.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
@@ -93,18 +93,26 @@ public class Main {
 
 		// extract apks from all the generated smali folders
 		List<Apk> apkList = new ArrayList<>();
-		generatedFolderPaths.forEach(apkFolderPath -> {
+		for (String apkFolderPath : generatedFolderPaths) {
 			Apk apk = null;
 			try {
-				apk = ApkInfoExtractor.extractApkFromSmaliFolder(apkFolderPath);
+				ApkInfoExtractor apkExtractor = new ApkInfoExtractor();
+				apk = apkExtractor.extractApkFromSmaliFolder(apkFolderPath);
 			} catch (FileNotFoundException | DocumentException e) {
-				LOG.debug(e.getMessage());
+				e.printStackTrace();
+				LOG.error(e.getStackTrace().toString());
 			}
 			if (apk != null) {
 				apkList.add(apk);
 			}
-		});
+		}
 		apkList.forEach(apk -> LOG.info(apk.toString()));
+
+		apkList = null;
+		System.gc();
+		// delete all apk's before program closes?
+
+		// TODO if they already exist then don't delete, show error message?
 		FileSystem.deleteFiles(folderPathsToDelete);
 	}
 

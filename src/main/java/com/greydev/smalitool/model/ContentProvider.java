@@ -1,30 +1,22 @@
 package com.greydev.smalitool.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class ContentProvider {
 
 	// save as file or String?
 	private String className;
-	private List<String> smaliClassPath;
+	private Map<String, List<String>> codeMap;
 
 	public ContentProvider() {
 
 	}
 
-	public ContentProvider(String className, List<String> smaliClassPath) {
+	public ContentProvider(String className, Map<String, List<String>> codeMap) {
 		super();
 		this.className = className;
-		this.smaliClassPath = smaliClassPath;
-	}
-
-	// no intent-filter
-	public List<String> getSmaliClassPath() {
-		return smaliClassPath;
-	}
-
-	public void setSmaliClassPath(List<String> smaliClassPath) {
-		this.smaliClassPath = smaliClassPath;
+		this.codeMap = codeMap;
 	}
 
 	public String getClassName() {
@@ -33,6 +25,14 @@ public class ContentProvider {
 
 	public void setClassName(String className) {
 		this.className = className;
+	}
+
+	public Map<String, List<String>> getCodeMap() {
+		return codeMap;
+	}
+
+	public void setCodeMap(Map<String, List<String>> codeMap) {
+		this.codeMap = codeMap;
 	}
 
 }
