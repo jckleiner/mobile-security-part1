@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +28,7 @@ import com.greydev.smalitool.model.Apk;
 public class Main {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(Main.class);
-	private static final String PREFIX_GENERATED = "generated_";
+	public static final String PREFIX_GENERATED = "generated_";
 
 	public static void main(String[] args) {
 
@@ -50,7 +49,6 @@ public class Main {
 		List<File> apkFiles = new ArrayList<>();
 		List<String> generatedFolderPaths = new ArrayList<>();
 		List<String> folderPathsToDelete = new ArrayList<>();
-		List<Integer> exitCodes = new ArrayList<>();
 
 		targetFolderContent.forEach(item -> {
 			if (item.isFile() && (StringUtils.endsWithIgnoreCase(item.getName(), ".apk"))) {
@@ -78,15 +76,13 @@ public class Main {
 			}
 			// apktool still generates an empty folder on any error
 			folderPathsToDelete.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
-			exitCodes.add(exitCode);
 		});
 
-		int successCount = Collections.frequency(exitCodes, 0);
-		int failCount = Collections.frequency(exitCodes, 1);
-		LOG.info(MessageFormat.format("\nFound {0} apk(s)\nsuccessful decoded: {1}\nfailure: {2}", apkFiles.size(),
-				successCount, failCount));
+		//		int failCount = Collections.frequency(exitCodes, 1);
+		LOG.info(MessageFormat.format("\nFound {0} apk(s) in the destination folder\nsuccessful decoded: {1}\nfailure: {2}\n",
+				apkFiles.size(), generatedFolderPaths.size(), apkFiles.size() - generatedFolderPaths.size()));
 
-		LOG.info("generated file count: " + generatedFolderPaths.size());
+		LOG.info("Generated Folder(s):");
 		generatedFolderPaths.forEach(folderPath -> {
 			LOG.info(folderPath);
 		});
@@ -107,10 +103,6 @@ public class Main {
 			}
 		}
 		apkList.forEach(apk -> LOG.info(apk.toString()));
-
-		apkList = null;
-		System.gc();
-		// delete all apk's before program closes?
 
 		// TODO if they already exist then don't delete, show error message?
 		FileSystem.deleteFiles(folderPathsToDelete);

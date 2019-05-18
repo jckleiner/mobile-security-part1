@@ -1,18 +1,21 @@
 package com.greydev.smalitool.model;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Apk {
 
+	private String name;
 	private String packageName;
 
 	// save both as File?
 	private String smaliFolderPath;
 	private String decodedManifestFilePath;
 
-	// TODO add permissions
-
+	private List<String> permissions = new ArrayList<>();
+	// Maps the full path of the activity class to an Actvitiy instance
 	private HashMap<String, Activity> activities = new HashMap<>();
 	private HashMap<String, BroadcastReceiver> brodcastReceivers = new HashMap<>();
 	private HashMap<String, ContentProvider> contentProviders = new HashMap<>();
@@ -20,10 +23,27 @@ public class Apk {
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("\nPackage Name: {0}\nSmali Folder Path: {1}\nDecoded Manifest File Path: {2}\n"
-				+ "Activity count: {3}\nbrodcastReceiver count: {4}\ncontentProvider count: {5}\nservice count: {6}",
-				this.packageName, this.smaliFolderPath, this.decodedManifestFilePath,
-				this.activities.size(), this.brodcastReceivers.size(), this.contentProviders.size(), this.services.size());
+		return MessageFormat.format("\nApk Name: {0}\nPackage Name: {1}\nSmali Folder Path: {2}\nDecoded Manifest File Path: {3}\n"
+				+ "Permission count: {4}\nActivity count: {5}\nBrodcast Receiver count: {6}\nContent Provider count: {7}\nService count: {8}",
+				this.getName(), this.getPackageName(), this.getSmaliFolderPath(), this.getDecodedManifestFilePath(),
+				this.getPermissions().size(), this.getActivities().size(), this.getBrodcastReceivers().size(),
+				this.getContentProviders().size(), this.getServices().size());
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public List<String> getPermissions() {
+		return permissions;
+	}
+
+	public void setPermissions(List<String> permissions) {
+		this.permissions = permissions;
 	}
 
 	public String getPackageName() {

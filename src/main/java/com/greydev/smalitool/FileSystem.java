@@ -21,7 +21,7 @@ public class FileSystem {
 
 	public static void deleteFiles(List<String> generatedFolderPaths) {
 		Objects.requireNonNull(generatedFolderPaths, "generatedFolderPaths can't be empty");
-		LOG.info("Deleting {} generated folder(s)...", generatedFolderPaths.size());
+		LOG.info("\nDeleting {} generated folder(s)...", generatedFolderPaths.size());
 
 		generatedFolderPaths.forEach(folderPath -> {
 			System.out.println(folderPath);
