@@ -11,9 +11,8 @@ public class ContentProvider {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(ContentProvider.class);
 
-	// save as file or String?
 	private String className;
-	private Map<String, List<String>> codeMap;
+	private Map<String, List<String>> codeMap; // Map<smaliFileName, code>
 
 	public ContentProvider() {
 
@@ -33,10 +32,10 @@ public class ContentProvider {
 		}
 	}
 
-	public void printCodeForSmaliClass(String pathToSmaliClass) {
-		LOG.info("\nSmali class: {}", pathToSmaliClass);
+	public void printCodeForSmaliClass(String smaliClassName) {
+		LOG.info("\nSmali class: {}", smaliClassName);
 		LOG.info("Smali code:");
-		for (String s : this.getCodeMap().get(pathToSmaliClass)) {
+		for (String s : this.getCodeMap().get(smaliClassName)) {
 			LOG.info(s);
 		}
 	}

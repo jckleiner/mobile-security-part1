@@ -9,13 +9,11 @@ public class Apk {
 
 	private String name;
 	private String packageName;
-
-	// save both as File?
 	private String smaliFolderPath;
 	private String decodedManifestFilePath;
 
 	private List<String> permissions = new ArrayList<>();
-	// Maps the full path of the activity class to an Activity instance
+	// Maps the fully qualified name of the activity class to an Activity instance
 	private HashMap<String, Activity> activities = new HashMap<>();
 	private HashMap<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
 	private HashMap<String, ContentProvider> contentProviders = new HashMap<>();

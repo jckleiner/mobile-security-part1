@@ -11,9 +11,8 @@ public class Service {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(Service.class);
 
-	// save as file or String?
 	private String className;
-	private Map<String, List<String>> codeMap;
+	private Map<String, List<String>> codeMap; // Map<smaliFileName, code>
 	private List<String> intentFilterActions;
 
 	public Service() {
@@ -33,16 +32,21 @@ public class Service {
 		for (String s : this.getCodeMap().keySet()) {
 			LOG.info(s);
 		}
-		LOG.info("Intent filter actions:");
-		for (String s : this.getIntentFilterActions()) {
-			LOG.info(s);
+		if (this.getIntentFilterActions().size() == 0) {
+			LOG.info("No intent filter actions found.");
+		}
+		else {
+			LOG.info("Intent filter actions:");
+			for (String s : this.getIntentFilterActions()) {
+				LOG.info(s);
+			}
 		}
 	}
 
-	public void printCodeForSmaliClass(String pathToSmaliClass) {
-		LOG.info("\nSmali class: {}", pathToSmaliClass);
+	public void printCodeForSmaliClass(String smaliClassName) {
+		LOG.info("\nSmali class: {}", smaliClassName);
 		LOG.info("Smali code:");
-		for (String s : this.getCodeMap().get(pathToSmaliClass)) {
+		for (String s : this.getCodeMap().get(smaliClassName)) {
 			LOG.info(s);
 		}
 	}

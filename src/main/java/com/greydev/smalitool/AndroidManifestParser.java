@@ -11,6 +11,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
+// dom4j needs also 'jaxen' as a dependency, won't work without it
 public class AndroidManifestParser {
 
 	private static final String XPATH_APPLICATION = "//manifest/application";

@@ -35,13 +35,12 @@ public class ApkInfoExtractor {
 		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
 
 		manifestParser = new AndroidManifestParser(smaliFolderPath + File.separator + MANIFEST_FILE_NAME);
-		String packageName = manifestParser.getPackageName();
 
 		Apk apk = new Apk();
 		apk.setName(StringUtils.substringAfterLast(smaliFolderPath, Main.PREFIX_GENERATED));
 		apk.setSmaliFolderPath(smaliFolderPath);
 		apk.setDecodedManifestFilePath(manifestParser.getManifestFile().getAbsolutePath());
-		apk.setPackageName(packageName);
+		apk.setPackageName(manifestParser.getPackageName());
 		apk.setPermissions(manifestParser.getPermissions());
 
 		LOG.info("\n\n******* " + apk.getName() + " *******");
@@ -94,7 +93,6 @@ public class ApkInfoExtractor {
 		LOG.info("Broadcast Receivers: " + receiverNodes.size());
 
 		receiverNodes.forEach(node -> {
-
 			String fullClassName = manifestParser.getNodeName(node);
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 			List<String> smaliClassPathList = new ArrayList<>();
@@ -116,8 +114,8 @@ public class ApkInfoExtractor {
 		// get all providers
 		HashMap<String, ContentProvider> contentProviders = new HashMap<>();
 		LOG.info("Content Providers: " + providerNodes.size());
-		providerNodes.forEach(node -> {
 
+		providerNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 			List<String> smaliClassPathList = new ArrayList<>();
@@ -138,8 +136,8 @@ public class ApkInfoExtractor {
 		// get all services
 		HashMap<String, Service> services = new HashMap<>();
 		LOG.info("Services: " + serviceNodes.size());
-		serviceNodes.forEach(node -> {
 
+		serviceNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
 			String className = StringUtils.substringAfterLast(fullClassName, ".");
 			List<String> smaliClassPathList = new ArrayList<>();
@@ -171,7 +169,8 @@ public class ApkInfoExtractor {
 			} catch (IOException e) {
 				LOG.error(e.getMessage());
 			}
-			codeMap.put(path, codeLines);
+			String smaliFileName = StringUtils.substringAfterLast(path, File.separator);
+			codeMap.put(smaliFileName, codeLines);
 		}
 		return codeMap;
 	}

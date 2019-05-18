@@ -5,13 +5,16 @@ import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 
 import com.greydev.smalitool.model.Apk;
+import com.greydev.smalitool.model.Service;
 
 /*
  * To copy any apk from the emulator to your current directory do the following in your terminal:
@@ -23,7 +26,6 @@ import com.greydev.smalitool.model.Apk;
 
 /*
  * TODO maybe: smalitool -delete -gui <folderPath>
- * TODO List<String> smaliClassPath could also be a HashMap<String, String/File>
  */
 public class Main {
 
@@ -88,7 +90,7 @@ public class Main {
 		});
 
 		// extract apks from all the generated smali folders
-		List<Apk> apkList = new ArrayList<>();
+		Map<String, Apk> apkList = new HashMap<>();
 		for (String apkFolderPath : generatedFolderPaths) {
 			Apk apk = null;
 			try {
@@ -99,27 +101,22 @@ public class Main {
 				LOG.error(e.getStackTrace().toString());
 			}
 			if (apk != null) {
-				apkList.add(apk);
+				String apkName = StringUtils.substringAfter(apkFolderPath, PREFIX_GENERATED);
+				apkList.put(apkName, apk);
 			}
 		}
-		apkList.forEach(apk -> LOG.info(apk.toString()));
+		apkList.values().forEach(apk -> LOG.info(apk.toString()));
 
-		//		apkList.get(0).getActivities().keySet().forEach(key -> System.out.println(key));
-		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").printInfo();
-		//		System.out.println();
-		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").printCodeForSmaliClass(
-		//				"C:\\Users\\Can\\Desktop\\develop\\MobileSecurity\\test\\test1\\generated_testAppInst\\smali\\com\\instagram\\direct\\share\\handler\\DirectShareHandlerActivity.smali");
+		Apk instagramApk = apkList.get("instagram");
 
-		apkList.get(0).getServices().get("com.instagram.inappbrowser.service.BrowserLiteCallbackService").printInfo();
-		System.out.println();
-		apkList.get(0).getServices().get("com.instagram.inappbrowser.service.BrowserLiteCallbackService").printCodeForSmaliClass(
-				"C:\\Users\\Can\\Desktop\\develop\\MobileSecurity\\test\\test1\\generated_testAppInst\\smali_classes2\\com\\instagram\\inappbrowser\\service\\BrowserLiteCallbackService$BrowserLiteCallbackImpl.smali");
+		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.share.tumblr.TumblrAuthActivity");
+		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity");
+		//		myActivity.printInfo();
+		//		myActivity.printCodeForSmaliClass("TumblrAuthActivity.smali");
 
-		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").getCodeMap().keySet()
-		//				.forEach(e -> System.out.println(e));
-
-		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").getCodeMap().keySet()
-		//				.forEach(e -> System.out.println(e));
+		Service myService = instagramApk.getServices().get("com.instagram.inappbrowser.service.BrowserLiteCallbackService");
+		myService.printInfo();
+		myService.printCodeForSmaliClass("BrowserLiteCallbackService$BrowserLiteCallbackImpl.smali");
 
 		// TODO if they already exist then don't delete, show error message?
 		FileSystem.deleteFiles(folderPathsToDelete);

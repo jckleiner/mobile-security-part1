@@ -44,7 +44,6 @@ public class FileSystem {
 		if (!(folderPath.startsWith("/") || folderPath.startsWith("C:\\"))) {
 			// System.getProperty("user.dir") can be used as well
 			Path path = FileSystems.getDefault().getPath(".").toAbsolutePath(); // adds a . at the end
-			LOG.info("FileSystems.getDefault().getPath(\".\").toAbsolutePath(): {}", path);
 			String currentDirectoryPath = StringUtils.removeEnd(path.toString(), ".");
 			folderPath = StringUtils.removeStart(folderPath, "./"); // remove ./ if present (unix current dir)
 			folderPath = StringUtils.removeStart(folderPath, ".\\"); // remove .\ if present (windows current dir)
