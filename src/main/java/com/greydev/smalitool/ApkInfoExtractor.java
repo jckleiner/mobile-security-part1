@@ -51,7 +51,7 @@ public class ApkInfoExtractor {
 		apk.setActivities(extractActivities(activityNodes, apk.getSmaliFolderPath()));
 
 		List<Node> broadcastReceiverNodes = manifestParser.getBroadcastReceivers();
-		apk.setBrodcastReceivers(extractBroadcastReceivers(broadcastReceiverNodes, apk.getSmaliFolderPath()));
+		apk.setBroadcastReceivers(extractBroadcastReceivers(broadcastReceiverNodes, apk.getSmaliFolderPath()));
 
 		List<Node> contentProviderNodes = manifestParser.getContentProviders();
 		apk.setContentProviders(extractContentProviders(contentProviderNodes, apk.getSmaliFolderPath()));
@@ -89,7 +89,7 @@ public class ApkInfoExtractor {
 	private HashMap<String, BroadcastReceiver> extractBroadcastReceivers(List<Node> receiverNodes, String smaliFolderPath) {
 		Objects.requireNonNull(receiverNodes, "receiverNodes cannot be null");
 		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
-		// get all brodcast receivers
+		// get all broadcast receivers
 		HashMap<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
 		LOG.info("Broadcast Receivers: " + receiverNodes.size());
 

@@ -104,6 +104,23 @@ public class Main {
 		}
 		apkList.forEach(apk -> LOG.info(apk.toString()));
 
+		//		apkList.get(0).getActivities().keySet().forEach(key -> System.out.println(key));
+		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").printInfo();
+		//		System.out.println();
+		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").printCodeForSmaliClass(
+		//				"C:\\Users\\Can\\Desktop\\develop\\MobileSecurity\\test\\test1\\generated_testAppInst\\smali\\com\\instagram\\direct\\share\\handler\\DirectShareHandlerActivity.smali");
+
+		apkList.get(0).getServices().get("com.instagram.inappbrowser.service.BrowserLiteCallbackService").printInfo();
+		System.out.println();
+		apkList.get(0).getServices().get("com.instagram.inappbrowser.service.BrowserLiteCallbackService").printCodeForSmaliClass(
+				"C:\\Users\\Can\\Desktop\\develop\\MobileSecurity\\test\\test1\\generated_testAppInst\\smali_classes2\\com\\instagram\\inappbrowser\\service\\BrowserLiteCallbackService$BrowserLiteCallbackImpl.smali");
+
+		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").getCodeMap().keySet()
+		//				.forEach(e -> System.out.println(e));
+
+		//		apkList.get(0).getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity").getCodeMap().keySet()
+		//				.forEach(e -> System.out.println(e));
+
 		// TODO if they already exist then don't delete, show error message?
 		FileSystem.deleteFiles(folderPathsToDelete);
 	}

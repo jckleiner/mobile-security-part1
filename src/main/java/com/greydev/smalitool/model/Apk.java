@@ -15,18 +15,18 @@ public class Apk {
 	private String decodedManifestFilePath;
 
 	private List<String> permissions = new ArrayList<>();
-	// Maps the full path of the activity class to an Actvitiy instance
+	// Maps the full path of the activity class to an Activity instance
 	private HashMap<String, Activity> activities = new HashMap<>();
-	private HashMap<String, BroadcastReceiver> brodcastReceivers = new HashMap<>();
+	private HashMap<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
 	private HashMap<String, ContentProvider> contentProviders = new HashMap<>();
 	private HashMap<String, Service> services = new HashMap<>();
 
 	@Override
 	public String toString() {
 		return MessageFormat.format("\nApk Name: {0}\nPackage Name: {1}\nSmali Folder Path: {2}\nDecoded Manifest File Path: {3}\n"
-				+ "Permission count: {4}\nActivity count: {5}\nBrodcast Receiver count: {6}\nContent Provider count: {7}\nService count: {8}",
+				+ "Permission count: {4}\nActivity count: {5}\nBroadcast Receiver count: {6}\nContent Provider count: {7}\nService count: {8}",
 				this.getName(), this.getPackageName(), this.getSmaliFolderPath(), this.getDecodedManifestFilePath(),
-				this.getPermissions().size(), this.getActivities().size(), this.getBrodcastReceivers().size(),
+				this.getPermissions().size(), this.getActivities().size(), this.getBroadcastReceivers().size(),
 				this.getContentProviders().size(), this.getServices().size());
 	}
 
@@ -78,12 +78,12 @@ public class Apk {
 		this.activities = activities;
 	}
 
-	public HashMap<String, BroadcastReceiver> getBrodcastReceivers() {
-		return brodcastReceivers;
+	public HashMap<String, BroadcastReceiver> getBroadcastReceivers() {
+		return broadcastReceivers;
 	}
 
-	public void setBrodcastReceivers(HashMap<String, BroadcastReceiver> brodcastReceivers) {
-		this.brodcastReceivers = brodcastReceivers;
+	public void setBroadcastReceivers(HashMap<String, BroadcastReceiver> broadcastReceivers) {
+		this.broadcastReceivers = broadcastReceivers;
 	}
 
 	public HashMap<String, ContentProvider> getContentProviders() {
