@@ -12,7 +12,7 @@ public class Service {
 	private static final Logger LOG = Utils.getConfiguredLogger(Service.class);
 
 	private String className;
-	private Map<String, List<String>> codeMap; // Map<smaliFileName, code>
+	private Map<String, List<String>> codeMap; // Map<'smaliFileName.smali', code>
 	private List<String> intentFilterActions;
 
 	public Service() {

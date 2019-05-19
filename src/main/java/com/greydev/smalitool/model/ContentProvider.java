@@ -12,7 +12,7 @@ public class ContentProvider {
 	private static final Logger LOG = Utils.getConfiguredLogger(ContentProvider.class);
 
 	private String className;
-	private Map<String, List<String>> codeMap; // Map<smaliFileName, code>
+	private Map<String, List<String>> codeMap; // Map<'smaliFileName.smali', code>
 
 	public ContentProvider() {
 

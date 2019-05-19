@@ -14,7 +14,6 @@ import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 
 import com.greydev.smalitool.model.Apk;
-import com.greydev.smalitool.model.Service;
 
 /*
  * To copy any apk from the emulator to your current directory do the following in your terminal:
@@ -107,16 +106,10 @@ public class Main {
 		}
 		apkList.values().forEach(apk -> LOG.info(apk.toString()));
 
-		Apk instagramApk = apkList.get("instagram");
-
-		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.share.tumblr.TumblrAuthActivity");
+		//		Apk instagramApk = apkList.get("instagram");
+		//		System.out.println(instagramApk.toString());
 		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity");
-		//		myActivity.printInfo();
-		//		myActivity.printCodeForSmaliClass("TumblrAuthActivity.smali");
-
-		Service myService = instagramApk.getServices().get("com.instagram.inappbrowser.service.BrowserLiteCallbackService");
-		myService.printInfo();
-		myService.printCodeForSmaliClass("BrowserLiteCallbackService$BrowserLiteCallbackImpl.smali");
+		//		myActivity.printCodeForSmaliClass("DirectShareHandlerActivity.smali");
 
 		// TODO if they already exist then don't delete, show error message?
 		FileSystem.deleteFiles(folderPathsToDelete);
