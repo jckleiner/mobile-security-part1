@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Apk {
 
@@ -14,10 +15,10 @@ public class Apk {
 
 	private List<String> permissions = new ArrayList<>();
 	// Maps the fully qualified name of the activity class to an Activity instance
-	private HashMap<String, Activity> activities = new HashMap<>();
-	private HashMap<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
-	private HashMap<String, ContentProvider> contentProviders = new HashMap<>();
-	private HashMap<String, Service> services = new HashMap<>();
+	private Map<String, Activity> activities = new HashMap<>();
+	private Map<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
+	private Map<String, ContentProvider> contentProviders = new HashMap<>();
+	private Map<String, Service> services = new HashMap<>();
 
 	@Override
 	public String toString() {
@@ -68,35 +69,39 @@ public class Apk {
 		this.decodedManifestFilePath = decodedManifestFilePath;
 	}
 
-	public HashMap<String, Activity> getActivities() {
+	/**
+	 * 
+	 * @return A map containing the activities of the Apk-object with their fully qualified name as key.
+	 */
+	public Map<String, Activity> getActivities() {
 		return activities;
 	}
 
-	public void setActivities(HashMap<String, Activity> activities) {
+	public void setActivities(Map<String, Activity> activities) {
 		this.activities = activities;
 	}
 
-	public HashMap<String, BroadcastReceiver> getBroadcastReceivers() {
+	public Map<String, BroadcastReceiver> getBroadcastReceivers() {
 		return broadcastReceivers;
 	}
 
-	public void setBroadcastReceivers(HashMap<String, BroadcastReceiver> broadcastReceivers) {
+	public void setBroadcastReceivers(Map<String, BroadcastReceiver> broadcastReceivers) {
 		this.broadcastReceivers = broadcastReceivers;
 	}
 
-	public HashMap<String, ContentProvider> getContentProviders() {
+	public Map<String, ContentProvider> getContentProviders() {
 		return contentProviders;
 	}
 
-	public void setContentProviders(HashMap<String, ContentProvider> contentProviders) {
+	public void setContentProviders(Map<String, ContentProvider> contentProviders) {
 		this.contentProviders = contentProviders;
 	}
 
-	public HashMap<String, Service> getServices() {
+	public Map<String, Service> getServices() {
 		return services;
 	}
 
-	public void setServices(HashMap<String, Service> services) {
+	public void setServices(Map<String, Service> services) {
 		this.services = services;
 	}
 

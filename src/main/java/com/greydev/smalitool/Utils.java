@@ -49,9 +49,10 @@ public class Utils {
 			}
 
 			exitCode = process.waitFor(); // returns 0 on success, 1 on failure
-			//			LOG.info("\nExited with error code : " + exitCode);
+			//			LOG.info("\nExited with error code : " + exitCode); // TODO remove this commented-out line
 
 		} catch (InterruptedException | IOException e) {
+			// TODO Only logging InterruptedException is like ignoring it and may lead to problems.
 			LOG.debug(e.getMessage());
 		}
 		return exitCode;
@@ -59,7 +60,7 @@ public class Utils {
 
 	public static <T> Logger getConfiguredLogger(Class<T> cls) {
 		// System property must be set before initializing the first logger, else it won't read it.
-		// the gotcha with setting a system property programatically is that you need to do it early enough; 
+		// the gotcha with setting a system property programatically is that you need to do it early enough 
 		// i.e. before the "logger" code tries to use the property value.
 		System.setProperty("smalitool.log.file.path", System.getProperty("user.home") + File.separator + "smalitool.log");
 		//		.class is used when there isn't an instance of the class available.
@@ -81,7 +82,7 @@ public class Utils {
 		String osName = System.getProperty("os.name");
 		LOG.debug("Detected OS: {}", osName);
 		Objects.requireNonNull(osName);
-		OS os = OS.OTHER;
+		OS os;
 		osName = osName.toLowerCase(Locale.ENGLISH);
 		if (osName.contains("windows")) {
 			os = OS.WINDOWS;

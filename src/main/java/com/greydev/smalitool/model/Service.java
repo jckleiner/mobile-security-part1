@@ -32,7 +32,7 @@ public class Service {
 		for (String s : this.getCodeMap().keySet()) {
 			LOG.info(s);
 		}
-		if (this.getIntentFilterActions().size() == 0) {
+		if (this.getIntentFilterActions().isEmpty()) {
 			LOG.info("No intent filter actions found.");
 		}
 		else {
