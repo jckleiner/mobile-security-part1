@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +28,16 @@ import com.greydev.smalitool.model.Service;
 public class ApkInfoExtractor {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(ApkInfoExtractor.class);
+	private static final Formatter FORMATTER = new Formatter();
 	private static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
+	
+	private static final String SMALIFOLDERPATHNULLTEXT = "smaliFolderPath cannot be null";
 
 	private AndroidManifestParser manifestParser;
 
 	public Apk extractApkFromSmaliFolder(String smaliFolderPath)
 			throws FileNotFoundException, DocumentException {
-		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
+		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 
 		manifestParser = new AndroidManifestParser(smaliFolderPath + File.separator + MANIFEST_FILE_NAME);
 
@@ -43,8 +48,9 @@ public class ApkInfoExtractor {
 		apk.setPackageName(manifestParser.getPackageName());
 		apk.setPermissions(manifestParser.getPermissions());
 
-		LOG.info("\n\n******* " + apk.getName() + " *******");
-		LOG.info("Permissions: " + apk.getPermissions().size());
+		LOG.info("{}", FORMATTER.format("%n%n******* %s *******", apk.getName()));
+		
+		LOG.info("{}", FORMATTER.format("Permissions: %d", apk.getPermissions().size()));
 
 		List<Node> activityNodes = manifestParser.getActivities();
 		apk.setActivities(extractActivities(activityNodes, apk.getSmaliFolderPath()));
@@ -63,9 +69,9 @@ public class ApkInfoExtractor {
 
 	private HashMap<String, Activity> extractActivities(List<Node> activityNodes, String smaliFolderPath) {
 		Objects.requireNonNull(activityNodes, "activityNodes cannot be null");
-		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
+		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all activities
-		LOG.info("Activities: " + activityNodes.size());
+		LOG.info("{}", FORMATTER.format("Activities: %d", activityNodes.size()));
 		HashMap<String, Activity> activities = new HashMap<>();
 
 		for (Node node : activityNodes) {
@@ -75,7 +81,7 @@ public class ApkInfoExtractor {
 			try {
 				smaliClassPathList = FileSystem.recursiveSearch(className, new File(smaliFolderPath));
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			List<String> intentList = manifestParser.getIntentActions(node);
 			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
@@ -87,10 +93,10 @@ public class ApkInfoExtractor {
 
 	private HashMap<String, BroadcastReceiver> extractBroadcastReceivers(List<Node> receiverNodes, String smaliFolderPath) {
 		Objects.requireNonNull(receiverNodes, "receiverNodes cannot be null");
-		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
+		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all broadcast receivers
 		HashMap<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
-		LOG.info("Broadcast Receivers: " + receiverNodes.size());
+		LOG.info("{}", FORMATTER.format("Broadcast Receivers: %d", receiverNodes.size()));
 
 		receiverNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -99,7 +105,7 @@ public class ApkInfoExtractor {
 			try {
 				smaliClassPathList = FileSystem.recursiveSearch(className, new File(smaliFolderPath));
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			List<String> intentList = manifestParser.getIntentActions(node);
 			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
@@ -110,10 +116,10 @@ public class ApkInfoExtractor {
 
 	private HashMap<String, ContentProvider> extractContentProviders(List<Node> providerNodes, String smaliFolderPath) {
 		Objects.requireNonNull(providerNodes, "providerNodes cannot be null");
-		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
+		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all providers
 		HashMap<String, ContentProvider> contentProviders = new HashMap<>();
-		LOG.info("Content Providers: " + providerNodes.size());
+		LOG.info("{}", FORMATTER.format("Content Providers: %d", providerNodes.size()));
 
 		providerNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -122,7 +128,7 @@ public class ApkInfoExtractor {
 			try {
 				smaliClassPathList = FileSystem.recursiveSearch(className, new File(smaliFolderPath));
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
 			contentProviders.put(fullClassName, new ContentProvider(className, codeMap));
@@ -132,10 +138,10 @@ public class ApkInfoExtractor {
 
 	private HashMap<String, Service> extractServices(List<Node> serviceNodes, String smaliFolderPath) {
 		Objects.requireNonNull(serviceNodes, "serviceNodes cannot be null");
-		Objects.requireNonNull(smaliFolderPath, "smaliFolderPath cannot be null");
+		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all services
 		HashMap<String, Service> services = new HashMap<>();
-		LOG.info("Services: " + serviceNodes.size());
+		LOG.info("{}", FORMATTER.format("Services: %d", serviceNodes.size()));
 
 		serviceNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -144,7 +150,7 @@ public class ApkInfoExtractor {
 			try {
 				smaliClassPathList = FileSystem.recursiveSearch(className, new File(smaliFolderPath));
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			List<String> intentList = manifestParser.getIntentActions(node);
 			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
@@ -163,7 +169,8 @@ public class ApkInfoExtractor {
 				/* IO Streams must be closed! Else it won't be able to delete the generated folder.
 				 * This step is not necessary with other types of Streams. */
 				try (Stream<String> stream = Files.lines(Paths.get(path))) {
-					stream.forEach(line -> codeLines.add(line));
+//					stream.forEach(line -> codeLines.add(line)); // TODO remove this if new version works
+					stream.forEach(codeLines::add);
 				}
 
 			} catch (IOException e) {

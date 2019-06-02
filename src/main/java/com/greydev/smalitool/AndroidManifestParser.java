@@ -49,9 +49,9 @@ public class AndroidManifestParser {
 		List<Node> permissionNodes = document.selectNodes(XPATH_USES_PERMISSION);
 		List<String> permissionList = new ArrayList<>();
 		permissionNodes.addAll(document.selectNodes(XPATH_USES_PERMISSION_SDK_23));
-		permissionNodes.forEach(node -> {
-			permissionList.add(node.valueOf(XPATH_ANDROID_NAME));
-		});
+		permissionNodes.forEach(node -> 
+			permissionList.add(node.valueOf(XPATH_ANDROID_NAME))
+		);
 		return permissionList;
 	}
 
