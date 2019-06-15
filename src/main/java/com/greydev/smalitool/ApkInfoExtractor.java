@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +27,8 @@ import com.greydev.smalitool.model.Service;
 public class ApkInfoExtractor {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(ApkInfoExtractor.class);
-	private static final Formatter FORMATTER = new Formatter();
 	private static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
-	
+
 	private static final String SMALIFOLDERPATHNULLTEXT = "smaliFolderPath cannot be null";
 
 	private AndroidManifestParser manifestParser;
@@ -48,9 +46,9 @@ public class ApkInfoExtractor {
 		apk.setPackageName(manifestParser.getPackageName());
 		apk.setPermissions(manifestParser.getPermissions());
 
-		LOG.info("{}", FORMATTER.format("%n%n******* %s *******", apk.getName()));
-		
-		LOG.info("{}", FORMATTER.format("Permissions: %d", apk.getPermissions().size()));
+		LOG.info("\n\n******* {} *******", apk.getName());
+
+		LOG.info("Permissions: {}", apk.getPermissions().size());
 
 		List<Node> activityNodes = manifestParser.getActivities();
 		apk.setActivities(extractActivities(activityNodes, apk.getSmaliFolderPath()));
@@ -71,7 +69,7 @@ public class ApkInfoExtractor {
 		Objects.requireNonNull(activityNodes, "activityNodes cannot be null");
 		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all activities
-		LOG.info("{}", FORMATTER.format("Activities: %d", activityNodes.size()));
+		LOG.info("Activities: {}", activityNodes.size());
 		HashMap<String, Activity> activities = new HashMap<>();
 
 		for (Node node : activityNodes) {
@@ -96,7 +94,7 @@ public class ApkInfoExtractor {
 		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all broadcast receivers
 		HashMap<String, BroadcastReceiver> broadcastReceivers = new HashMap<>();
-		LOG.info("{}", FORMATTER.format("Broadcast Receivers: %d", receiverNodes.size()));
+		LOG.info("Broadcast Receivers: {}", receiverNodes.size());
 
 		receiverNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -119,7 +117,7 @@ public class ApkInfoExtractor {
 		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all providers
 		HashMap<String, ContentProvider> contentProviders = new HashMap<>();
-		LOG.info("{}", FORMATTER.format("Content Providers: %d", providerNodes.size()));
+		LOG.info("Content Providers: {}", providerNodes.size());
 
 		providerNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -141,7 +139,7 @@ public class ApkInfoExtractor {
 		Objects.requireNonNull(smaliFolderPath, SMALIFOLDERPATHNULLTEXT);
 		// get all services
 		HashMap<String, Service> services = new HashMap<>();
-		LOG.info("{}", FORMATTER.format("Services: %d", serviceNodes.size()));
+		LOG.info("Services: {}", serviceNodes.size());
 
 		serviceNodes.forEach(node -> {
 			String fullClassName = manifestParser.getNodeName(node);
@@ -169,7 +167,7 @@ public class ApkInfoExtractor {
 				/* IO Streams must be closed! Else it won't be able to delete the generated folder.
 				 * This step is not necessary with other types of Streams. */
 				try (Stream<String> stream = Files.lines(Paths.get(path))) {
-//					stream.forEach(line -> codeLines.add(line)); // TODO remove this if new version works
+					//					stream.forEach(line -> codeLines.add(line)); // TODO remove this if new version works
 					stream.forEach(codeLines::add);
 				}
 
