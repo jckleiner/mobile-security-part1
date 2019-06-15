@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 
+import com.greydev.smalitool.model.Activity;
 import com.greydev.smalitool.model.Apk;
 
 /*
@@ -35,8 +36,12 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		if (args.length != 1) {
-			LOG.info("Expecting only one argument");
+		//		if (args.length != 1) {
+		//			LOG.info("Expecting only one argument");
+		//			System.exit(0);
+		//		}
+		if (args.length != 2) {
+			LOG.info("Please enter 2 arguments");
 			System.exit(0);
 		}
 		LOG.info("input: {}", args[0]);
@@ -107,11 +112,26 @@ public class Main {
 
 		//		Apk instagramApk = apkList.get("instagram"); // TODO remove this commented-out block of code
 		//		System.out.println(instagramApk.toString());
+		// Lcom/instagram/direct/share/handler/DirectShareHandlerActivity;->getIntent()Landroid/content/Intent;
 		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity");
 		//		myActivity.printCodeForSmaliClass("DirectShareHandlerActivity.smali");
 
+		Apk slicerApk = apkList.get("slicertest"); // TODO remove this commented-out block of code
+		// Lcom/example/slicer_test/MainActivity;->write(I)V
+		// Lcom/instagram/direct/share/handler/DirectShareHandlerActivity;->getIntent()Landroid/content/Intent;
+		Activity myActivity = slicerApk.getActivities().get("com.example.slicer_test.MainActivity");
+		myActivity.printCodeForSmaliClass("MainActivity.smali");
+
+		// ******************************************************************************************************
+		String sliceMethodPrototype = args[1];
+		System.out.println("\nMethod input: " + sliceMethodPrototype);
+		System.out.println("\nStarting slicing...");
+		Slicer.slice(apkList, sliceMethodPrototype);
+
+		// ******************************************************************************************************
+
 		// TODO if they already exist then don't delete, show error message?
-		FileSystem.deleteFiles(folderPathsToDelete);
+		//		FileSystem.deleteFiles(folderPathsToDelete);
 	}
 
 }
