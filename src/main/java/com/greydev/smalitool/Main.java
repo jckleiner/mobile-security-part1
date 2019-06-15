@@ -131,7 +131,7 @@ public class Main {
 		// ******************************************************************************************************
 
 		// TODO if they already exist then don't delete, show error message?
-		//		FileSystem.deleteFiles(folderPathsToDelete);
+		FileSystem.deleteFiles(folderPathsToDelete);
 	}
 
 }
