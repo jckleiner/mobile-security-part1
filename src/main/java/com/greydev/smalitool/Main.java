@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import com.greydev.smalitool.model.Apk;
 public class Main {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(Main.class);
+	private static final Formatter FORMATTER = new Formatter();
 	public static final String PREFIX_GENERATED = "generated_";
 
 	public static void main(String[] args) {
@@ -79,14 +81,12 @@ public class Main {
 			folderPathsToDelete.add(targetFolder.getAbsolutePath() + File.separator + generatedApkFolderName);
 		});
 
-		//		int failCount = Collections.frequency(exitCodes, 1);
-		LOG.info(MessageFormat.format("\nFound {0} apk(s) in the destination folder\nsuccessful decoded: {1}\nfailure: {2}\n",
+		//		int failCount = Collections.frequency(exitCodes, 1); // TODO remove this commented-out line
+		LOG.info("{}", FORMATTER.format("%nFound %d apk(s) in the destination folder%nsuccessfully decoded: %d%nfailure: %d%n",
 				apkFiles.size(), generatedFolderPaths.size(), apkFiles.size() - generatedFolderPaths.size()));
 
 		LOG.info("Generated Folder(s):");
-		generatedFolderPaths.forEach(folderPath -> {
-			LOG.info(folderPath);
-		});
+		generatedFolderPaths.forEach(LOG::info);
 
 		// extract apks from all the generated smali folders
 		Map<String, Apk> apkList = new HashMap<>();
@@ -96,8 +96,7 @@ public class Main {
 				ApkInfoExtractor apkExtractor = new ApkInfoExtractor();
 				apk = apkExtractor.extractApkFromSmaliFolder(apkFolderPath);
 			} catch (FileNotFoundException | DocumentException e) {
-				e.printStackTrace();
-				LOG.error(e.getStackTrace().toString());
+				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			if (apk != null) {
 				String apkName = StringUtils.substringAfter(apkFolderPath, PREFIX_GENERATED);
@@ -106,7 +105,7 @@ public class Main {
 		}
 		apkList.values().forEach(apk -> LOG.info(apk.toString()));
 
-		//		Apk instagramApk = apkList.get("instagram");
+		//		Apk instagramApk = apkList.get("instagram"); // TODO remove this commented-out block of code
 		//		System.out.println(instagramApk.toString());
 		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity");
 		//		myActivity.printCodeForSmaliClass("DirectShareHandlerActivity.smali");

@@ -8,8 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,14 +26,13 @@ public class FileSystem {
 		LOG.info("\nDeleting {} generated folder(s)...", generatedFolderPaths.size());
 
 		generatedFolderPaths.forEach(folderPath -> {
-			System.out.println(folderPath);
+			System.out.println(folderPath); // TODO should this not be logged instead?
 			File currentFolder = new File(folderPath);
 			if (currentFolder.isDirectory()) {
 				try {
 					FileUtils.deleteDirectory(currentFolder);
 				} catch (IOException e) {
-					LOG.error(e.getMessage());
-					e.printStackTrace();
+					LOG.error(Arrays.toString(e.getStackTrace()));
 					return;
 				}
 			}
@@ -69,8 +70,8 @@ public class FileSystem {
 			throw new FileNotFoundException("Working directory not found under " + workingDirectory.getAbsolutePath());
 		}
 		List<String> pathList = new ArrayList<>();
-		try {
-			Files.walk(Paths.get(workingDirectory.getAbsolutePath()))
+		try (Stream<Path> fileStream = Files.walk(Paths.get(workingDirectory.getAbsolutePath()))){
+			fileStream
 					.filter(Files::isRegularFile)
 					.forEach(path -> {
 						String filePath = path.toString();
@@ -117,7 +118,7 @@ public class FileSystem {
 		List<String> smaliClassPathList = Utils.startProcessWithOutputList(processBuilder);
 
 		if (smaliClassPathList == null) {
-			return new ArrayList<String>();
+			return new ArrayList<>();
 		}
 		return smaliClassPathList;
 	}

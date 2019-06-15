@@ -15,7 +15,7 @@ public class Activity {
 	private Map<String, List<String>> codeMap; // Map<'smaliFileName.smali', code>
 	private List<String> intentFilterActions;
 
-	// add intent filter category?
+	// TODO add intent filter category?
 
 	public Activity() {
 
@@ -34,7 +34,7 @@ public class Activity {
 		for (String s : this.getCodeMap().keySet()) {
 			LOG.info(s);
 		}
-		if (this.getIntentFilterActions().size() == 0) {
+		if (this.getIntentFilterActions().isEmpty()) {
 			LOG.info("No intent filter actions found.");
 		}
 		else {
