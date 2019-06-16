@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 
-import com.greydev.smalitool.model.Activity;
 import com.greydev.smalitool.model.Apk;
 
 /*
@@ -116,17 +115,18 @@ public class Main {
 		//		Activity myActivity = instagramApk.getActivities().get("com.instagram.direct.share.handler.DirectShareHandlerActivity");
 		//		myActivity.printCodeForSmaliClass("DirectShareHandlerActivity.smali");
 
-		Apk slicerApk = apkList.get("slicertest"); // TODO remove this commented-out block of code
-		// Lcom/example/slicer_test/MainActivity;->write(I)V
-		// Lcom/instagram/direct/share/handler/DirectShareHandlerActivity;->getIntent()Landroid/content/Intent;
-		Activity myActivity = slicerApk.getActivities().get("com.example.slicer_test.MainActivity");
-		myActivity.printCodeForSmaliClass("MainActivity.smali");
+		//		Apk slicerApk = apkList.get("slicertest"); // TODO remove this commented-out block of code
+		//		// Lcom/example/slicer_test/MainActivity;->write(I)V
+		//		// Lcom/instagram/direct/share/handler/DirectShareHandlerActivity;->getIntent()Landroid/content/Intent;
+		//		Activity myActivity = slicerApk.getActivities().get("com.example.slicer_test.MainActivity");
+		//		myActivity.printCodeForSmaliClass("MainActivity.smali");
 
 		// ******************************************************************************************************
 		String sliceMethodPrototype = args[1];
 		System.out.println("\nMethod input: " + sliceMethodPrototype);
 		System.out.println("\nStarting slicing...");
-		Slicer.slice(apkList, sliceMethodPrototype);
+		Slicer slicer = new Slicer();
+		slicer.startSlicing(apkList, sliceMethodPrototype);
 
 		// ******************************************************************************************************
 

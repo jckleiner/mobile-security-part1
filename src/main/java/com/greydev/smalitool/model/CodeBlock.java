@@ -7,7 +7,9 @@ public class CodeBlock {
 
 	private String apkName;
 	private String className;
+	private String methodDefinition;
 	private Map<Integer, String> codeLines = new HashMap<>();
+	private Map<Integer, String> slicedLines = new HashMap<>();
 
 	public String getApkName() {
 		return apkName;
@@ -31,6 +33,22 @@ public class CodeBlock {
 
 	public void setCodeLines(Map<Integer, String> codeLines) {
 		this.codeLines = codeLines;
+	}
+
+	public Map<Integer, String> getSlicedLines() {
+		return slicedLines;
+	}
+
+	public void setSlicedLines(Map<Integer, String> slicedLines) {
+		this.slicedLines = slicedLines;
+	}
+
+	public String getMethodDefinition() {
+		return methodDefinition;
+	}
+
+	public void setMethodDefinition(String methodDefinition) {
+		this.methodDefinition = methodDefinition;
 	}
 
 }
