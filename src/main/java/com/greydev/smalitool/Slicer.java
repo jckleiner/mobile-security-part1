@@ -115,33 +115,55 @@ public class Slicer {
 			Set<String> registersToControl = getRegistersForLine(lastLine);
 			Set<String> alreadyControlledRegisters = new HashSet<>();
 
-			//			for (String reg : registersToControl) { 
 			while (!registersToControl.isEmpty()) { // 				----> START <----
-				String reg = registersToControl.iterator().next();
+				String currentRegister = registersToControl.iterator().next();
 
-				if (alreadyControlledRegisters.contains(reg)) {
-					System.out.println(" --> Skipping, register was already controlled: " + reg);
+				if (alreadyControlledRegisters.contains(currentRegister)) {
+					System.out.println(" --> Skipping, register was already controlled: " + currentRegister);
+					registersToControl.remove(currentRegister); // prevents infinite loops
 					continue;
 				}
 
 				for (int i = lastLineNumber - 1; i >= firstLineNumber; i--) {
 					String currentLine = codeLines.get(i);
-					Set<String> relatedRegisters = getRelatedRegister(reg, currentLine);
 
-					if (!relatedRegisters.isEmpty()) {
-						//						System.out.println(currentLine);
+					if (StringUtils.isBlank(currentLine)) { // skip if null or empty line
+						continue;
+					}
+					currentLine = currentLine.trim();
+
+					if (currentLine.startsWith("move-result-object " + currentRegister)
+							|| currentLine.startsWith("move-result " + currentRegister)) {
+						// get the previous non empty line
+						int previousLineNumber = getPreviousNonEmptyLineNumber(block, i);
+
+						// swap current register with new register
+						Set<String> relatedRegisters = getRegistersForLine(block.getCodeLines().get(previousLineNumber));
+						// add both lines to slice	
 						block.getSlicedLines().put(i, currentLine);
-						relatedRegisters.forEach(newReg -> {
-							//							System.out.println("was looking for: " + reg + ", adding new register: " + newReg);
+						block.getSlicedLines().put(previousLineNumber, block.getCodeLines().get(previousLineNumber));
+						System.out.println(i + "\t" + currentLine);
+						System.out.println(previousLineNumber + "\t" + block.getCodeLines().get(previousLineNumber));
+						registersToControl.remove(currentRegister);
+						currentRegister = relatedRegisters.iterator().next(); // TODO check
+						//						registersToControl.addAll(relatedRegisters);
+						continue; // continue search from the previous line;
+					}
+
+					// get all registers that might effect the currentRegister
+					Set<String> relatedRegisters = getRelatedRegisters(currentRegister, currentLine);
+
+					if (!relatedRegisters.isEmpty()) { // means that our currentRegister was changed somehow
+						block.getSlicedLines().put(i, currentLine); // add line to slice
+						System.out.println(i + "\t" + currentLine);
+						relatedRegisters.forEach(newReg -> { // add the other register, so that we can also track them
 							registersToControl.add(newReg);
 						});
 					}
 				}
-				// TODO burda silmem for loopundaki sıraya bir etki eder mi? EXCEPTION ATIYOR
-				// TODO add while in for loop works, remove throws exc ???
-				registersToControl.remove(reg);
-				alreadyControlledRegisters.add(reg);
-			}
+				registersToControl.remove(currentRegister); // we got all the slices for one register, so delete it
+				alreadyControlledRegisters.add(currentRegister); // prevent same register controls over and over
+			} // 																							----> END <----
 			System.out.println("already controlled registers: ");
 			alreadyControlledRegisters.forEach(r -> System.out.println(r));
 			System.out.println("end block...\n");
@@ -151,6 +173,8 @@ public class Slicer {
 
 		// print slice results for each block
 		blocksToSlice.forEach(block -> {
+			System.out.println("\n" + block.getApkName() + ", " + block.getClassName() + ", " +
+					block.getMethodDefinition());
 
 			block.getSlicedLines().keySet();
 
@@ -161,8 +185,6 @@ public class Slicer {
 				System.out.println(key + "\t" + line);
 			}
 
-			System.out.println("\n" + block.getApkName() + ", " + block.getClassName() + ", " +
-					block.getMethodDefinition());
 		});
 
 		TreeMap<Integer, String> treeMap = new TreeMap<>();
@@ -170,37 +192,41 @@ public class Slicer {
 		writeSlicesToFile(blocksToSlice);
 	}
 
-	private Set<String> getRelatedRegister(String register, String line) {
+	private int getPreviousNonEmptyLineNumber(CodeBlock block, int currentLineNumber) {
+
+		for (int i = currentLineNumber - 1; i >= 1; i--) {
+			if (StringUtils.isNoneBlank(block.getCodeLines().get(i))) {
+				return i;
+			}
+		}
+		throw new RuntimeException("Couldn't find previous line number");
+	}
+
+	private Set<String> getRelatedRegisters(String register, String line) {
 		Set<String> newRegisters = new HashSet<>();
 
 		if (StringUtils.isBlank(line)) {
 			return newRegisters;
 		}
-		// starts with: everything except a space, one space, everything
-		Pattern p = Pattern.compile("^([^ ]*)([ ])(.*)");
-		// create matcher for pattern p and given string
-		Matcher m = p.matcher(line.trim()); // important! every line starts with whitespace!
 
-		// if an occurrence if a pattern was found in a given string...
-		if (m.find()) {
-			if (m.group(3).startsWith(register)) {
-				// TODO add other registers
-				// TODO also need to check for {xx, xx, xx} and method names etc
-				// mul-int v3, v3, v1 ---- if-gt v1, v0, :cond_0
-				String[] possibleNewRegisters = m.group(3).split(", ");
+		// trim is important! every line starts with whitespace!
+		line = line.trim().replace("{", "").replace("}", ""); // make lines with {p0, v1, ...} also match
+		// starts with: everything except a space, one space, everything
+		Pattern p1 = Pattern.compile("^([^ ]*)([ ])(.*)");
+		// create matcher for pattern p and given string
+		Matcher m1 = p1.matcher(line);
+
+		if (m1.find()) {
+			//			System.out.println(" *** pattern found : " + m1.group(3));
+			if (m1.group(3).startsWith(register)) {
+				String[] possibleNewRegisters = m1.group(3).split(", ");
 				for (String reg : possibleNewRegisters) {
-					if (reg.length() == 2) { // TODO: bad cheat, might not work for everything
+					if (reg.length() == 2 && !line.startsWith("invoke-virtual")) { // TODO: bad cheat, might not work for everything
 						newRegisters.add(reg);
-						// TODO also check for { } registers
 					}
 				}
 			}
 		}
-
-		//		System.out.println("=== TEST === looking for: " + register);
-		//		System.out.println("current line: " + line);
-		//		newRegisters.forEach(reg -> System.out.println(reg + " - "));
-		//		System.out.println();
 
 		return newRegisters;
 	}
@@ -225,19 +251,11 @@ public class Slicer {
 		if (StringUtils.isBlank(line)) {
 			return registers;
 		}
+		Pattern p = Pattern.compile("^(.*)[{](.*)[}](.*)");
+		Matcher m = p.matcher(line);
 
-		Pattern p2 = Pattern.compile("^(.*)[{](.*)[}](.*)");
-		//		line = "invoke-virtual {p0, v2, v3}, Lcom/example/slicer_test/MainActivity;->writeWithTwoParams(II)V";
-		Matcher m2 = p2.matcher(line);
-
-		if (m2.find()) {
-			registers = new HashSet<>(Arrays.asList(m2.group(2).split(", ")));
-			//			registers = m2.group(2).split(", ");
-			//			System.out.println("\n----------REGEX 2---------\n");
-			//			System.out.println(m2.group(0)); // whole matched expression
-			//			System.out.println(m2.group(1)); // first expression from round brackets (Testing)
-			//			System.out.println(m2.group(2)); // second one (123)
-			//			System.out.println(m2.group(3)); // third one (Testing)
+		if (m.find()) {
+			registers = new HashSet<>(Arrays.asList(m.group(2).split(", ")));
 		}
 		return registers;
 	}
