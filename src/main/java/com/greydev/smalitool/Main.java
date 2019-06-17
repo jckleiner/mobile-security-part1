@@ -123,8 +123,6 @@ public class Main {
 
 		// ******************************************************************************************************
 		String sliceMethodPrototype = args[1];
-		System.out.println("\nMethod input: " + sliceMethodPrototype);
-		System.out.println("\nStarting slicing...");
 		Slicer slicer = new Slicer();
 		slicer.startSlicing(apkList, sliceMethodPrototype);
 
