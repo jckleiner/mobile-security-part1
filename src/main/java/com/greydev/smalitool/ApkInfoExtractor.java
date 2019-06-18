@@ -54,14 +54,14 @@ public class ApkInfoExtractor {
 		List<Node> activityNodes = manifestParser.getActivities();
 		apk.setActivities(extractActivities(activityNodes, apk.getSmaliFolderPath()));
 
-		//		List<Node> broadcastReceiverNodes = manifestParser.getBroadcastReceivers();
-		//		apk.setBroadcastReceivers(extractBroadcastReceivers(broadcastReceiverNodes, apk.getSmaliFolderPath()));
-		//
-		//		List<Node> contentProviderNodes = manifestParser.getContentProviders();
-		//		apk.setContentProviders(extractContentProviders(contentProviderNodes, apk.getSmaliFolderPath()));
-		//
-		//		List<Node> serviceNodes = manifestParser.getServices();
-		//		apk.setServices(extractServices(serviceNodes, apk.getSmaliFolderPath()));
+		List<Node> broadcastReceiverNodes = manifestParser.getBroadcastReceivers();
+		apk.setBroadcastReceivers(extractBroadcastReceivers(broadcastReceiverNodes, apk.getSmaliFolderPath()));
+
+		List<Node> contentProviderNodes = manifestParser.getContentProviders();
+		apk.setContentProviders(extractContentProviders(contentProviderNodes, apk.getSmaliFolderPath()));
+
+		List<Node> serviceNodes = manifestParser.getServices();
+		apk.setServices(extractServices(serviceNodes, apk.getSmaliFolderPath()));
 
 		return apk;
 	}
