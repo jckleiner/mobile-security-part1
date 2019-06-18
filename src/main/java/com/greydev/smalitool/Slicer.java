@@ -24,6 +24,9 @@ import com.greydev.smalitool.model.CodeBlock;
 
 public class Slicer {
 
+	// Lcom/example/slicer_test/MainActivity;->print(I)V
+	// Lcom/example/slicer_test/MainActivity;->write(I)V
+
 	private static final String METHOD_START = ".method";
 	private static final String OUTPUT_FILE_NAME = System.getProperty("user.home") + "\\smalitool_slices.txt";
 	private static final String BLOCK_SEPARATOR = "\n\n######################################################"
@@ -167,7 +170,8 @@ public class Slicer {
 
 		System.out.println("\n### Slicing is complete. Here are all the slices:");
 
-		blocksToSlice.forEach(block -> {// print slice results for each block
+		blocksToSlice.forEach(block -> {
+			//			slicedBlocks.add(block.getSlicedLines());
 			System.out.println("\n" + block.getApkName() + ", " + block.getClassName() + "\n" +
 					block.getMethodDefinition());
 
@@ -177,8 +181,7 @@ public class Slicer {
 				System.out.println(key + "\t" + line.trim());
 			}
 		});
-
-		writeSlicesToFile(blocksToSlice);
+		//		writeSlicesToFile(slicedBlocks);
 	}
 
 	private int getPreviousNonEmptyLineNumber(CodeBlock block, int currentLineNumber) {
@@ -257,7 +260,7 @@ public class Slicer {
 			try {
 				FileUtils.writeStringToFile(sliceResultFile, builder.toString(), StandardCharsets.UTF_8);
 			} catch (IOException e) {
-				// TODO
+				// TODO log
 				e.printStackTrace();
 			}
 		});
