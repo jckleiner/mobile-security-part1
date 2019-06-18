@@ -12,7 +12,8 @@ public class Activity {
 	private static final Logger LOG = Utils.getConfiguredLogger(Activity.class);
 
 	private String className;
-	private Map<String, List<String>> codeMap; // Map<'smaliFileName.smali', code>
+	//	private Map<String, List<String>> codeMap; // Map<'smaliFileName.smali', code>
+	private Map<String, Map<Integer, String>> codeMap; // Map<'smaliFileName.smali', code>
 	private List<String> intentFilterActions;
 
 	// TODO add intent filter category?
@@ -21,7 +22,7 @@ public class Activity {
 
 	}
 
-	public Activity(String className, Map<String, List<String>> codeMap, List<String> intentFilterActions) {
+	public Activity(String className, Map<String, Map<Integer, String>> codeMap, List<String> intentFilterActions) {
 		super();
 		this.className = className;
 		this.codeMap = codeMap;
@@ -48,7 +49,7 @@ public class Activity {
 	public void printCodeForSmaliClass(String smaliClassName) {
 		LOG.info("\nSmali class: {}", smaliClassName);
 		LOG.info("Smali code:");
-		for (String s : this.getCodeMap().get(smaliClassName)) {
+		for (String s : this.getCodeMap().get(smaliClassName).values()) {
 			LOG.info(s);
 		}
 	}
@@ -61,11 +62,11 @@ public class Activity {
 		this.className = className;
 	}
 
-	public Map<String, List<String>> getCodeMap() {
+	public Map<String, Map<Integer, String>> getCodeMap() {
 		return codeMap;
 	}
 
-	public void setCodeMap(Map<String, List<String>> codeMap) {
+	public void setCodeMap(Map<String, Map<Integer, String>> codeMap) {
 		this.codeMap = codeMap;
 	}
 

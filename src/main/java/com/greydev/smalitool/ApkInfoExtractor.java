@@ -28,8 +28,9 @@ public class ApkInfoExtractor {
 
 	private static final Logger LOG = Utils.getConfiguredLogger(ApkInfoExtractor.class);
 	private static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
-
 	private static final String SMALIFOLDERPATHNULLTEXT = "smaliFolderPath cannot be null";
+
+	private static int lineNumber = 1;
 
 	private AndroidManifestParser manifestParser;
 
@@ -53,14 +54,14 @@ public class ApkInfoExtractor {
 		List<Node> activityNodes = manifestParser.getActivities();
 		apk.setActivities(extractActivities(activityNodes, apk.getSmaliFolderPath()));
 
-		List<Node> broadcastReceiverNodes = manifestParser.getBroadcastReceivers();
-		apk.setBroadcastReceivers(extractBroadcastReceivers(broadcastReceiverNodes, apk.getSmaliFolderPath()));
-
-		List<Node> contentProviderNodes = manifestParser.getContentProviders();
-		apk.setContentProviders(extractContentProviders(contentProviderNodes, apk.getSmaliFolderPath()));
-
-		List<Node> serviceNodes = manifestParser.getServices();
-		apk.setServices(extractServices(serviceNodes, apk.getSmaliFolderPath()));
+		//		List<Node> broadcastReceiverNodes = manifestParser.getBroadcastReceivers();
+		//		apk.setBroadcastReceivers(extractBroadcastReceivers(broadcastReceiverNodes, apk.getSmaliFolderPath()));
+		//
+		//		List<Node> contentProviderNodes = manifestParser.getContentProviders();
+		//		apk.setContentProviders(extractContentProviders(contentProviderNodes, apk.getSmaliFolderPath()));
+		//
+		//		List<Node> serviceNodes = manifestParser.getServices();
+		//		apk.setServices(extractServices(serviceNodes, apk.getSmaliFolderPath()));
 
 		return apk;
 	}
@@ -82,7 +83,7 @@ public class ApkInfoExtractor {
 				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			List<String> intentList = manifestParser.getIntentActions(node);
-			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
+			Map<String, Map<Integer, String>> codeMap = extractCode(smaliClassPathList);
 			// some apk's have the same class names with different package names, that's why use full class names as key!
 			activities.put(fullClassName, new Activity(className, codeMap, intentList));
 		}
@@ -106,7 +107,7 @@ public class ApkInfoExtractor {
 				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			List<String> intentList = manifestParser.getIntentActions(node);
-			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
+			Map<String, Map<Integer, String>> codeMap = extractCode(smaliClassPathList);
 			broadcastReceivers.put(fullClassName, new BroadcastReceiver(className, codeMap, intentList));
 		});
 		return broadcastReceivers;
@@ -128,7 +129,7 @@ public class ApkInfoExtractor {
 			} catch (FileNotFoundException e) {
 				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
-			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
+			Map<String, Map<Integer, String>> codeMap = extractCode(smaliClassPathList);
 			contentProviders.put(fullClassName, new ContentProvider(className, codeMap));
 		});
 		return contentProviders;
@@ -151,24 +152,29 @@ public class ApkInfoExtractor {
 				LOG.error(Arrays.toString(e.getStackTrace()));
 			}
 			List<String> intentList = manifestParser.getIntentActions(node);
-			Map<String, List<String>> codeMap = extractCode(smaliClassPathList);
+			Map<String, Map<Integer, String>> codeMap = extractCode(smaliClassPathList);
 			services.put(fullClassName, new Service(className, codeMap, intentList));
 		});
 		return services;
 	}
 
-	private Map<String, List<String>> extractCode(List<String> smaliClassPathList) {
+	private Map<String, Map<Integer, String>> extractCode(List<String> smaliClassPathList) {
 		Objects.requireNonNull(smaliClassPathList, "smaliClassPathList cannot be null");
-		Map<String, List<String>> codeMap = new HashMap<>();
+		//		Map<String, List<String>> codeMap = new HashMap<>();
+		Map<String, Map<Integer, String>> codeMap = new HashMap<>();
 
 		for (String path : smaliClassPathList) {
-			List<String> codeLines = new ArrayList<>();
+			Map<Integer, String> codeLines = new HashMap<>();
+			//			List<String> codeLines = new ArrayList<>();
 			try {
 				/* IO Streams must be closed! Else it won't be able to delete the generated folder.
 				 * This step is not necessary with other types of Streams. */
 				try (Stream<String> stream = Files.lines(Paths.get(path))) {
 					//					stream.forEach(line -> codeLines.add(line)); // TODO remove this if new version works
-					stream.forEach(codeLines::add);
+					lineNumber = 1;
+					stream.forEach(line -> {
+						codeLines.put(getNextLineNumber(), line);
+					});
 				}
 
 			} catch (IOException e) {
@@ -178,6 +184,10 @@ public class ApkInfoExtractor {
 			codeMap.put(smaliFileName, codeLines);
 		}
 		return codeMap;
+	}
+
+	private static int getNextLineNumber() {
+		return lineNumber++;
 	}
 
 }
